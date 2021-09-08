@@ -60,7 +60,7 @@ function renderCo5Chords()
 {   
     var path = [];
 
-    if(midiSettings.chords.length ==0)       
+    if(midiSettings.chords.length ===0)       
         return;
 
     var xc = main.clientWidth / 2;
@@ -74,7 +74,7 @@ function renderCo5Chords()
 
         for (let midiChord of midiSettings.chords)
         {
-            if(co5PosToChromaticTonic(chord.position,chord.minor) == midiChord.tonic && chord.minor == midiChord.minor)
+            if(co5PosToChromaticTonic(chord.position,chord.minor) === midiChord.tonic && chord.minor === midiChord.minor)
             {
                 //Label center
             
@@ -90,7 +90,7 @@ function renderCo5Chords()
 
                 var hl = midiSettings.animate(1,0,midiChord.refreshedTime,1);
                 
-                if(hl == 0)
+                if(hl === 0)
                     continue;
 
                 var col = lerpcolor(hl,{r:255,g:125,b:10},{r:255,g:255,b:255});
@@ -192,24 +192,24 @@ function maybeRegisterChord(notes){
     if(notevalues.length < 3)
         return;
 
-    for(var i=0;i!=notevalues.length;++i)
+    for(var i=0; i!==notevalues.length; ++i)
     {
         var delta = limitToOctave(notevalues[i] - baseNote);
 
-        if(delta == 4)
+        if(delta === 4)
             major = true;
-        if(delta == 3)
+        if(delta === 3)
             minor = true;            
     }
 
     //Undeciphered
-    if(major == minor)
+    if(major === minor)
         return;
     
     var lastchord = midiSettings.chords.length > 0 ? midiSettings.chords[midiSettings.chords.length-1] : createMidiChord(666 /*dummy*/,false);
     var newchord = createMidiChord(limitToOctave(baseNote - midiSettings.c4Code),minor);
 
-    if(lastchord.tonic != newchord.tonic || lastchord.minor != newchord.minor)
+    if(lastchord.tonic !== newchord.tonic || lastchord.minor !== newchord.minor)
         midiSettings.chords.push(newchord);
     else
         midiSettings.chords[midiSettings.chords.length-1].refreshedTime = Date.now();

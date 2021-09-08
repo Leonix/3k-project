@@ -158,13 +158,13 @@ function drawArrows(ctx, width, height) {
 
                 var nextPoint = startPoint;
 
-                var step = symbolNum == 0 ? 0 : ctx.measureText(header[symbolNum - 1]).width;
+                var step = symbolNum === 0 ? 0 : ctx.measureText(header[symbolNum - 1]).width;
 
                 while (nextPoint < curve.length - 1 && getCurveLength(curve, startPoint, nextPoint) < step) {
                     ++nextPoint;
                 }
 
-                if (startPoint == nextPoint && startPoint < curve.length - 1)
+                if (startPoint === nextPoint && startPoint < curve.length - 1)
                     nextPoint++;
 
                 var angle = Math.atan2(curve[startPoint].y - curve[nextPoint].y, curve[startPoint].x - curve[nextPoint].x);
@@ -289,7 +289,7 @@ function createArrowsHandler(px, py, cavnas, evtype, keyCode) {
         case 'keydown':
 
             //Ctrl
-            if (keyCode == 17)
+            if (keyCode === 17)
                 arrowSettings.alternateDrawingMode = true;
 
             break;
@@ -297,7 +297,7 @@ function createArrowsHandler(px, py, cavnas, evtype, keyCode) {
         case 'keyup':
 
             //Ctrl
-            if (keyCode == 17 && arrowSettings.alternateDrawingMode) {
+            if (keyCode === 17 && arrowSettings.alternateDrawingMode) {
                 if (arrowSettings.drawingArrow != null)
                     finishArrow(true);
 
@@ -328,7 +328,7 @@ function startArrow(px, py) {
 }
 
 function finishArrow(minimalistic) {
-    if (activeCanvasName == 'keyboard')
+    if (activeCanvasName === 'keyboard')
         arrowSettings.drawingArrow.stroke = true;
 
     activeArrows.push(cleanupArrow(arrowSettings.drawingArrow, minimalistic));
@@ -458,7 +458,7 @@ function getSqDist(p1, p2) {
 function getCurveLength(curve, i1, i2) {
     var dist = 0;
 
-    if (i1 == i2 || i1 >= curve.length || i2 >= curve.length || i1 < 0 || i2 < 0)
+    if (i1 === i2 || i1 >= curve.length || i2 >= curve.length || i1 < 0 || i2 < 0)
         return 0;
 
     if (i1 > i2) {
@@ -584,7 +584,7 @@ function drawCurve(ctx, ptsa, tension, headless) {
 
         for (var leg = 0; leg < 2; leg++) {
 
-            var legAngle = leg == 0 ? -Math.PI / 6 : Math.PI / 6;
+            var legAngle = leg === 0 ? -Math.PI / 6 : Math.PI / 6;
 
             var dx = Math.cos(angle + legAngle);
             var dy = Math.sin(angle + legAngle);

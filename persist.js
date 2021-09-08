@@ -104,7 +104,7 @@ function restoreStateSnapshot(snapshot){
         var attributeOrProperty = watchedElements[selector];
         var value = snapshot.elements[storagePrefix+selector];
 
-        if(undefined == value)
+        if(undefined === value)
             continue;
 
         value = JSON.parse(value);
@@ -122,7 +122,7 @@ function restoreStateSnapshot(snapshot){
 
     var oldStates = snapshot.objects;
 
-    if(undefined == oldStates)
+    if(undefined === oldStates)
         return;
 
     var restored = JSON.parse(oldStates);
@@ -168,7 +168,7 @@ function restoreState()
 {
     var value = localStorage.getItem('lastState');
 
-    if(undefined == value)
+    if(undefined === value)
         return;
 
     var snapshot = JSON.parse(value);

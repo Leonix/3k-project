@@ -25,7 +25,9 @@ var longboardState = {
         knownStringStates.open,
         knownStringStates.open,
         knownStringStates.open],
-    stringLabels:['','','','','','']
+    stringLabels:['','','','','',''],
+    stringColors: [],
+    nutRadii: [],
 };
 
 
@@ -132,14 +134,6 @@ window.addEventListener('load', function () {
 
 });
 
-/**
- * 
- * @param {int} stringNumber 
- * @param {knownStringState} state 
- */
-function setStringState(stringNumber,state){
-    longboardState.stringStates[stringNumber] = state;
-}
 
 function updateLongboardSettingsFromUI() {
 
@@ -208,7 +202,7 @@ function updateVertical() {
 
 function drawLongboard() {
 
-    if(longboardSettings.verticalParts == 0)
+    if(longboardSettings.verticalParts === 0)
         updateLongboardSize();
 
     drawLongboardBase(longboard.ctx, longboard.clientWidth, longboard.clientHeight);
@@ -225,6 +219,7 @@ function drawLongboard() {
     invokeModeIndependentRendereres(longboard.ctx, longboard.clientWidth, longboard.clientHeight);
 }
 
+const calcNutSize = () => longboardState.currentFingerSize - 3;
 
 function getFingerCenter(fret,string,w,h){
 
@@ -288,7 +283,7 @@ function renderFingerOrBarr(finger, w,h, ctx, isGhost){
 
     //label  
 
-    var label = finger.label.length == 0 && isGhost ? "_" : finger.label;
+    var label = finger.label.length === 0 && isGhost ? "_" : finger.label;
 
     ctx.globalAlpha = 0.3;
     ctx.font = Math.round(finger.size) + "px Arial black";
@@ -347,17 +342,17 @@ function drawStringStates(ctx,w,h){
         if(sstate === knownStringStates.none || sstate === knownStringStates.customLabel)
             continue;
 
-        if(longboardState.fingers.find(s=>s.string1 <= nstring && s.string2 >= nstring) != undefined)
+        if(longboardState.fingers.find(s=>s.string1 <= nstring && s.string2 >= nstring) !== undefined)
             continue;
 
-        var pos = getFingerCenter(-0.8,nstring,w,h);
+        const pos = getFingerCenter(-0.8, nstring, w, h);
 
         pos.y+=ctx.measureText("M").width/2 - 3;
         pos.x-=ctx.measureText("o").width/2 + 2;
 
-        if(sstate == knownStringStates.open)
+        if(sstate === knownStringStates.open)
             ctx.fillText("o", pos.x,pos.y);
-        if(sstate == knownStringStates.closed)
+        if(sstate === knownStringStates.closed)
             ctx.fillText("x", pos.x,pos.y);
     }
 
@@ -366,27 +361,28 @@ function drawStringStates(ctx,w,h){
     ctx.textAlign = 'left';
     
     for (let nstring = 0; nstring < longboardState.stringStates.length; nstring++) {
-        const sstate = longboardState.stringStates[nstring];
+        const stringState = longboardState.stringStates[nstring];
         
-        if(sstate !== knownStringStates.customLabel)
+        if(stringState !== knownStringStates.customLabel)
             continue;
 
-        if(longboardState.fingers.find(s=>s.string1 <= nstring && s.string2 >= nstring) != undefined)
+        if(longboardState.fingers.find(s=>s.string1 <= nstring && s.string2 >= nstring) !== undefined)
             continue;
+        
+        let color = longboardState.stringColors[nstring] || longboardSettings.colorScheme.stringColor;
+        let radius = longboardState.nutRadii[nstring] || ctx.measureText("M").width*0.7;
 
-        var pos = getFingerCenter(-0.8,nstring,w,h);
+        const fingerCenter = getFingerCenter(-0.8, nstring, w, h);
 
-        ctx.fillStyle = longboardSettings.colorScheme.stringColor;
+        ctx.fillStyle = color;
         ctx.globalAlpha = 1;
         ctx.setLineDash([1, 0]);
-
-        const padRad = ctx.measureText("M").width*0.7;
-
+        
         ctx.beginPath();
         //upper cap
-        ctx.arc(pos.x-10, pos.y, padRad, Math.PI/2, -Math.PI/2, false);
+        ctx.arc(fingerCenter.x-10, fingerCenter.y, radius, Math.PI/2, -Math.PI/2, false);
         //lower cap
-        ctx.arc(pos.x, pos.y, padRad, -Math.PI/2, Math.PI/2, false);
+        ctx.arc(fingerCenter.x, fingerCenter.y, radius, -Math.PI/2, Math.PI/2, false);
         //connect
         ctx.closePath();
 
@@ -394,8 +390,8 @@ function drawStringStates(ctx,w,h){
         
         ctx.fillStyle = 'white';
         ctx.fillText(longboardState.stringLabels[nstring], 
-            pos.x-ctx.measureText(longboardState.stringLabels[nstring]).width/2 - 2,
-            pos.y+ctx.measureText("M").width/2-2);
+            fingerCenter.x-ctx.measureText(longboardState.stringLabels[nstring]).width/2 - 2,
+            fingerCenter.y+ctx.measureText("M").width/2-2);
         
     }
 }
@@ -550,6 +546,8 @@ function maybeHandleNutClick(x,y, isCtrl){
     if(longboardState.stringStates[nstring] === knownStringStates.closed){
         longboardState.stringStates[nstring] = knownStringStates.customLabel;
         longboardState.stringLabels[nstring] = "_";
+        longboardState.stringColors[nstring] = longboardState.currentFill;
+        longboardState.nutRadii[nstring] = calcNutSize();
         return nstring;
     }
 
@@ -561,9 +559,9 @@ function maybeHandleNutClick(x,y, isCtrl){
 }
 
 
-var _escKeycode = 27;
-var _delKeycode = 46;
-var _bckspKeycode = 8;
+const _escKeycode = 27;
+const _delKeycode = 46;
+const _bckspKeycode = 8;
 
 /**
  * State machine
@@ -623,12 +621,12 @@ const FingerInputModes = {
             }
 
             var filtered  = longboardState.fingers.filter(finger=>
-                finger.fret != this.state.pos.fret ||           
+                finger.fret !== this.state.pos.fret ||           
                 finger.string1 > this.state.pos.string ||
                 finger.string2 < this.state.pos.string
             );
 
-            if(filtered.length != longboardState.fingers.length)
+            if(filtered.length !== longboardState.fingers.length)
             {
                 longboardState.fingers = filtered;
                 redraw();
@@ -676,7 +674,7 @@ const FingerInputModes = {
             ctx.globalAlpha = 0.5;
             ctx.setLineDash([3, 1]);
     
-            const padRad = ctx.measureText("M").width*0.7+2;
+            const padRad = longboardState.nutRadii[this.state.template.string]+2;
     
             ctx.beginPath();
             //left cap
@@ -720,7 +718,15 @@ const FingerInputModes = {
                     break;
                 case _bckspKeycode:
                     this.state.template.label = "";                    
-                    break; 
+                    break;
+                case 187://add
+                    longboardState.currentFingerSize = Math.min(longboardState.currentFingerSize +1 , 20);
+                    longboardState.nutRadii[this.state.template.string] = calcNutSize();
+                    break;
+                case 189://subtract
+                    longboardState.currentFingerSize = Math.max(longboardState.currentFingerSize -1 , 12);
+                    longboardState.nutRadii[this.state.template.string] = calcNutSize();
+                    break;
                 default:                    
                     return;
             }
@@ -731,7 +737,7 @@ const FingerInputModes = {
 
         },
         keyup:  function (code) {
-            if (code == _delKeycode)
+            if (code === _delKeycode)
             {
                 this.state.template.label = "";
                 this.updateStringLabel();
@@ -795,7 +801,7 @@ const FingerInputModes = {
 
         },
         keyup:  function (code) {
-            if (code == _delKeycode)
+            if (code === _delKeycode)
             {
                 this.state.template.label = "";
                 redraw();

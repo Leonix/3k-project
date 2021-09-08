@@ -19,7 +19,6 @@ var fretboardSettings = {
 /**
  * Create fretboard-related HTML controls
  */
-
 window.addEventListener('load', function () {
     var lastchild = document.querySelector("#mode-keyboard-controls");
 
@@ -89,7 +88,7 @@ function updateFretboardSettingsFromUI(){
     fretboardSettings.fingerFill = document.querySelector('#fill-fretboard-finger-color').value;
     fretboardSettings.capoFret = parseInt(document.querySelector('#fretboard-capo-number').value);
 
-    if(fretboardSettings.chordName == null || fretboardSettings.chordName == "")
+    if(fretboardSettings.chordName == null || fretboardSettings.chordName === "")
         fretboardSettings.chordName = "Chord";
 
     if(isNaN(fretboardSettings.capoFret))
@@ -167,7 +166,7 @@ function drawFingerPositions(ctx, w, h) {
         const gutarString = fretboardSettings.stringState[i];
         
         //Open or Muted - not our fingering case
-        if(gutarString.state != stringStates.pressed)
+        if(gutarString.state !== stringStates.pressed)
             continue;
 
         var x = 3 / 16 * w + 2 / 16 * w * i;
@@ -219,13 +218,13 @@ function drawNoteNames(ctx, w, h) {
     ctx.font = Math.round(0.06 * h).toString() + "px Times New Roman";
     ctx.textAlign = 'center';
 
-    for (let nstring = 0; nstring!=fretboardSettings.guitarTuningChromatic.length; nstring++) {
+    for (let nstring = 0; nstring!==fretboardSettings.guitarTuningChromatic.length; nstring++) {
         var tuning = fretboardSettings.guitarTuningChromatic[nstring];
 
-        if(fretboardSettings.stringState[nstring].state == stringStates.muted)
+        if(fretboardSettings.stringState[nstring].state === stringStates.muted)
             continue;
      
-        if(fretboardSettings.stringState[nstring].state == stringStates.pressed)          
+        if(fretboardSettings.stringState[nstring].state === stringStates.pressed)          
             tuning+=fretboardSettings.stringState[nstring].fret;
         
         tuning+=fretboardSettings.capoFret;
@@ -246,7 +245,7 @@ function handleFretClick(x, y) {
 
         //Remove finger
 
-        if(clickedString.state == stringStates.pressed)
+        if(clickedString.state === stringStates.pressed)
         {
             clickedString.state = stringStates.open;
             clickedString.fret = 0;    
@@ -294,7 +293,7 @@ function switchStringState(stringNumber) {
 
 function toggleFretHighlight(x, y, cavnas, evtype, code,evt) {
     
-    if (evtype != 'mousedown') 
+    if (evtype !== 'mousedown') 
         return;
     
     switch (evt.button) {
@@ -309,7 +308,7 @@ function toggleFretHighlight(x, y, cavnas, evtype, code,evt) {
 }
 
 function toggleFretLabel(x, y, cavnas, evtype) {
-    if (evtype != 'mousedown')
+    if (evtype !== 'mousedown')
         return;
 
     /* TODO */

@@ -75,7 +75,7 @@ var LabelEditModes = Object.freeze({
             redraw();
         },
         keydown: function (code) {
-            if (code == _rotationModeKeycode)
+            if (code === _rotationModeKeycode)
                 labelMode = LabelEditModes.Rotating;
         },
         mousedown: function(x,y,c) {
@@ -105,11 +105,11 @@ var LabelEditModes = Object.freeze({
             redraw();
         },
         keydown: function (code) {
-            if (code == _arbitraryAngleKeycode)
+            if (code === _arbitraryAngleKeycode)
                 this.snap45 = false;
         },
         keyup: function (code) {
-            if (code == _arbitraryAngleKeycode)
+            if (code === _arbitraryAngleKeycode)
                 this.snap45 = true;
         },
         mousedown: function (x, y, c) {
@@ -257,7 +257,7 @@ function drawLabels(ctx, width, height) {
             y: ctx.measureText("M").width
         }
 
-        if(label.filltype == ChordHighlightType.Sector){
+        if(label.filltype === ChordHighlightType.Sector){
 
             var sector = getSectorNumberAndRadiusFromPixelPosition(label.x,label.y,width,height);
             var bounds = getChordBoundsFromChordPosition(sector.sector,2);
@@ -273,9 +273,9 @@ function drawLabels(ctx, width, height) {
 
             //Check all four bounding-box (AABB) corners for angle violations
 
-            for(var ix = 0;ix!=2;++ix)
+            for(var ix = 0; ix!==2; ++ix)
             {
-                for(var iy =0;iy!=2;++iy)
+                for(var iy =0; iy!==2; ++iy)
                 {
                     var probe = Math.atan2(
                         label.y - yc + (iy*2-1)*dim.y/2,
@@ -335,7 +335,7 @@ function drawLabels(ctx, width, height) {
         ctx.translate(-dim.x / 2, dim.y / 2);
 
         //Only stroke if no fill is active
-        if(label.filltype == ChordHighlightType.None)
+        if(label.filltype === ChordHighlightType.None)
         {
             ctx.globalAlpha = 0.15;
             ctx.fillStyle = 'white';

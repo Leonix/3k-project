@@ -3,8 +3,8 @@
  Co5 chord definitions 
 */
 
-var ChordHighlightType =  Object.freeze({
-    None : 0,
+var ChordHighlightType = Object.freeze({
+    None: 0,
     Sector: 1,
     Fog: 2,
     Circle: 3,
@@ -34,36 +34,34 @@ var UiRenderingModeMode = Object.freeze({
 
 var ModeDefinitions = Object.freeze({
     None: {color: ''},
-    Ionian : {color: 'green'},
-    Dorian : {color: '#FF1744'},
-    Phrygian : {color: '#FFEE58'},
-    Lydian  : {color: 'orange'},
-    Mixolydian : {color: '#239dff'},
-    Aeolian  : {color: '#6c00ff'},
-    Locrian   : {color: 'cyan'},
+    Ionian: {color: 'green'},
+    Dorian: {color: '#FF1744'},
+    Phrygian: {color: '#FFEE58'},
+    Lydian: {color: 'orange'},
+    Mixolydian: {color: '#239dff'},
+    Aeolian: {color: '#6c00ff'},
+    Locrian: {color: 'cyan'},
 });
-
 
 
 var circleParameters = {
     marginPx: 5,
-    outerRadiusPercents : 1,
-    majorCircleThicknessPercents : 0.3,
-    minorCircleThicknessPercents  : 0.3,
+    outerRadiusPercents: 1,
+    majorCircleThicknessPercents: 0.3,
+    minorCircleThicknessPercents: 0.3,
 
-    inactiveColor : function(){ 
-        switch(this.renderMode)
-        {
+    inactiveColor: function () {
+        switch (this.renderMode) {
             case UiRenderingModeMode.Bold:
-            return "#555";
+                return "#555";
             case UiRenderingModeMode.ClassicThin:
-            return "#aaaaaa";
+                return "#aaaaaa";
         }
-        this.renderMode 
+        this.renderMode
     },
 
-    originalWidth :  600,
-    scalingFactor: function() {
+    originalWidth: 600,
+    scalingFactor: function () {
         return document.querySelector("#circleOfFifths").width / this.originalWidth;
     },
 
@@ -73,30 +71,30 @@ var circleParameters = {
     sectorCount: 12,
     sectorRadians: Math.PI * 2 / 12,
 
-    isTonicMinor : false,
-    isAltTonicMinor : false,
+    isTonicMinor: false,
+    isAltTonicMinor: false,
 
     selectedTonic: 0,
     altTonic: 3,
-    tonicShown : true,
-    altTonicShown : false,
+    tonicShown: true,
+    altTonicShown: false,
     renderMode: UiRenderingModeMode.ClassicThin,
-    tonicHighlightHarmonicQualityMode : HarmonicQualityMode.None,
+    tonicHighlightHarmonicQualityMode: HarmonicQualityMode.None,
     tonicDegreeEnabled: true,
     tonicColor: "red",
-    altColor:"yellow"
+    altColor: "yellow"
 };
 
 /**
  * Creates chord defition given its name / alternate name and position on circle of 5ths
- * 
+ *
  * @param {number} co5Position - chord index on circle of fifths, starting from 0 to 11, clockwise
  * @param {boolean} isMinor - whether chord is minor. Affects positioning
  * @param {string} basename - base chord name.
  * @param {number} baseModeration - is base chord sharp or flat (#/b)
  * @param {string} altName - alternate chord name. Optional
  * @param {number} altAlteration - is alternate chord sharp or flat (#/b)
- * 
+ *
  * @return {Object<>} Chord definition object
  */
 function createChord(co5Position, isMinor, basename, baseModeration, altName = "", altAlteration = 0) {
@@ -106,37 +104,37 @@ function createChord(co5Position, isMinor, basename, baseModeration, altName = "
 
         base: basename,
         baseMod: baseModeration,
-        isCustomName : false,
+        isCustomName: false,
 
-        actualPx : null,
-        actualPy : null,
+        actualPx: null,
+        actualPy: null,
 
         hasAlternateName: altName !== "",
         altName: altName,
-        altMod: !!altName.length? altAlteration : ChordAlterationType.None,
+        altMod: !!altName.length ? altAlteration : ChordAlterationType.None,
 
         active: false,
         highlight: ChordHighlightType.None,
         highlightColor: circleParameters.highlightColor,
-        highlightPower : 1,
+        highlightPower: 1,
 
         //Returns true if this chord is in tonality
         inTonic: function (tonality) {
             var tonal12 = (tonality + 6) % 12;
-            var pos12 = (this.position+6) % 12;
+            var pos12 = (this.position + 6) % 12;
 
             return Math.min(Math.abs(tonal12 - pos12), 12 - Math.abs(tonal12 - pos12)) < 2;
         },
 
         //Returns true if this chord is tonic chord
-        isTonicChord: function (tonic,selMinor) {
-        var tonic12 = (tonic + 6) % 12;
-        var pos12 = (this.position+6) % 12;
+        isTonicChord: function (tonic, selMinor) {
+            var tonic12 = (tonic + 6) % 12;
+            var pos12 = (this.position + 6) % 12;
 
-        return Math.min(Math.abs(tonic12 - pos12), 12 - Math.abs(tonic12 - pos12)) == 0 && this.minor == selMinor;
+            return Math.min(Math.abs(tonic12 - pos12), 12 - Math.abs(tonic12 - pos12)) === 0 && this.minor === selMinor;
         },
 
-        getRelativePosition : function(target) {
+        getRelativePosition: function (target) {
             var delta = this.position - target.position;
 
             while (delta < -6)
@@ -147,108 +145,103 @@ function createChord(co5Position, isMinor, basename, baseModeration, altName = "
         },
 
 
-        getExtensionFont : function(){
-            
-            var fontSelector = {
-                minorFont : function(chord){
-
-                if (circleParameters.tonicShown && chord.isTonicChord(circleParameters.selectedTonic, circleParameters.isTonicMinor)) 
-                {
-                    if(circleParameters.renderMode == UiRenderingModeMode.Bold)
-                        return "bold "+(20*circleParameters.scalingFactor())+"px Arial";
-
-                    return "bold "+(20*circleParameters.scalingFactor())+"px Arial";
-                }
-
-                if(circleParameters.renderMode == UiRenderingModeMode.Bold && chord.active)
-                    return "bold "+(20*circleParameters.scalingFactor())+"px Arial";
-                                
-                return (20*circleParameters.scalingFactor())+"px Arial";
-            },
-
-            majorFont : function(chord){
-
-                if (circleParameters.tonicShown && chord.isTonicChord(circleParameters.selectedTonic, circleParameters.isTonicMinor)) 
-                {    
-                    if(circleParameters.renderMode == UiRenderingModeMode.Bold)
-                        return "bold "+(25*circleParameters.scalingFactor())+"px Arial";
-
-                    return "bold "+(25*circleParameters.scalingFactor())+"px Arial";
-                }
-
-                if(circleParameters.renderMode == UiRenderingModeMode.Bold && chord.active)
-                    return "bold "+(25*circleParameters.scalingFactor())+"px Arial";
-                                
-                return (25*circleParameters.scalingFactor())+"px Arial";
-            },
-        } 
-        
-        return this.minor ? fontSelector.minorFont(this) : fontSelector.majorFont(this);
-        },
-
-        getFont : function(){
+        getExtensionFont: function () {
 
             var fontSelector = {
-                minorFont : function(chord){
+                minorFont: function (chord) {
 
+                    if (circleParameters.tonicShown && chord.isTonicChord(circleParameters.selectedTonic, circleParameters.isTonicMinor)) {
+                        if (circleParameters.renderMode === UiRenderingModeMode.Bold)
+                            return "bold " + (20 * circleParameters.scalingFactor()) + "px Arial";
 
-
-                    if (circleParameters.tonicShown && chord.isTonicChord(circleParameters.selectedTonic, circleParameters.isTonicMinor)) 
-                    {
-                        if(circleParameters.renderMode == UiRenderingModeMode.Bold)
-                            return "bold "+(30*circleParameters.scalingFactor())+"px Arial";
-
-                        return "bold "+(20*circleParameters.scalingFactor())+"px Arial";
+                        return "bold " + (20 * circleParameters.scalingFactor()) + "px Arial";
                     }
 
-                    if(circleParameters.renderMode == UiRenderingModeMode.Bold && chord.active)
-                        return "bold "+(25*circleParameters.scalingFactor())+"px Arial";
-                                    
-                    return (20*circleParameters.scalingFactor())+"px Arial";
+                    if (circleParameters.renderMode === UiRenderingModeMode.Bold && chord.active)
+                        return "bold " + (20 * circleParameters.scalingFactor()) + "px Arial";
+
+                    return (20 * circleParameters.scalingFactor()) + "px Arial";
                 },
 
-                majorFont : function(chord){
+                majorFont: function (chord) {
 
-                    if (circleParameters.tonicShown && chord.isTonicChord(circleParameters.selectedTonic, circleParameters.isTonicMinor)) 
-                    {    
-                        if(circleParameters.renderMode == UiRenderingModeMode.Bold)
-                            return "bold "+(35*circleParameters.scalingFactor())+"px Arial";
+                    if (circleParameters.tonicShown && chord.isTonicChord(circleParameters.selectedTonic, circleParameters.isTonicMinor)) {
+                        if (circleParameters.renderMode === UiRenderingModeMode.Bold)
+                            return "bold " + (25 * circleParameters.scalingFactor()) + "px Arial";
 
-                        return "bold "+(30*circleParameters.scalingFactor())+"px Arial";
+                        return "bold " + (25 * circleParameters.scalingFactor()) + "px Arial";
                     }
 
-                    if(circleParameters.renderMode == UiRenderingModeMode.Bold && chord.active)
-                        return "bold "+(33*circleParameters.scalingFactor())+"px Arial";
-                                    
-                    return (30*circleParameters.scalingFactor())+"px Arial";
+                    if (circleParameters.renderMode === UiRenderingModeMode.Bold && chord.active)
+                        return "bold " + (25 * circleParameters.scalingFactor()) + "px Arial";
+
+                    return (25 * circleParameters.scalingFactor()) + "px Arial";
                 },
-            }          
-            
+            }
+
             return this.minor ? fontSelector.minorFont(this) : fontSelector.majorFont(this);
         },
 
-        getRelativeMode : function(target) {
+        getFont: function () {
+
+            var fontSelector = {
+                minorFont: function (chord) {
+
+
+                    if (circleParameters.tonicShown && chord.isTonicChord(circleParameters.selectedTonic, circleParameters.isTonicMinor)) {
+                        if (circleParameters.renderMode === UiRenderingModeMode.Bold)
+                            return "bold " + (30 * circleParameters.scalingFactor()) + "px Arial";
+
+                        return "bold " + (20 * circleParameters.scalingFactor()) + "px Arial";
+                    }
+
+                    if (circleParameters.renderMode === UiRenderingModeMode.Bold && chord.active)
+                        return "bold " + (25 * circleParameters.scalingFactor()) + "px Arial";
+
+                    return (20 * circleParameters.scalingFactor()) + "px Arial";
+                },
+
+                majorFont: function (chord) {
+
+                    if (circleParameters.tonicShown && chord.isTonicChord(circleParameters.selectedTonic, circleParameters.isTonicMinor)) {
+                        if (circleParameters.renderMode === UiRenderingModeMode.Bold)
+                            return "bold " + (35 * circleParameters.scalingFactor()) + "px Arial";
+
+                        return "bold " + (30 * circleParameters.scalingFactor()) + "px Arial";
+                    }
+
+                    if (circleParameters.renderMode === UiRenderingModeMode.Bold && chord.active)
+                        return "bold " + (33 * circleParameters.scalingFactor()) + "px Arial";
+
+                    return (30 * circleParameters.scalingFactor()) + "px Arial";
+                },
+            }
+
+            return this.minor ? fontSelector.minorFont(this) : fontSelector.majorFont(this);
+        },
+
+        getRelativeMode: function (target) {
             var delta = this.getRelativePosition(target);
 
-            if(this.minor)
+            if (this.minor)
                 return ModeDefinitions.None;
 
             switch (delta) {
-            case 0:
-                return ModeDefinitions.Ionian;
-            case 1:
-                return ModeDefinitions.Mixolydian;
-            case 2:
-                return ModeDefinitions.Dorian;
-            case 3:
-                return ModeDefinitions.Aeolian;
-            case 4:
-                return ModeDefinitions.Phrygian;
-            case 5:
-                return ModeDefinitions.Locrian;
-            case -1:
-                return ModeDefinitions.Lydian;
-                
+                case 0:
+                    return ModeDefinitions.Ionian;
+                case 1:
+                    return ModeDefinitions.Mixolydian;
+                case 2:
+                    return ModeDefinitions.Dorian;
+                case 3:
+                    return ModeDefinitions.Aeolian;
+                case 4:
+                    return ModeDefinitions.Phrygian;
+                case 5:
+                    return ModeDefinitions.Locrian;
+                case -1:
+                    return ModeDefinitions.Lydian;
+
                 default:
                     return ModeDefinitions.None;
             }
@@ -259,8 +252,8 @@ function createChord(co5Position, isMinor, basename, baseModeration, altName = "
 
         //Returns chord degree in given tonality
         getDegree: function (tonality, isMinor) {
-            var tonic12 = (tonality + 6 ) % 12;
-            var pos12 = (this.position+6) % 12;
+            var tonic12 = (tonality + 6) % 12;
+            var pos12 = (this.position + 6) % 12;
 
             if (!this.inTonic(tonality))
                 return "";
@@ -269,176 +262,171 @@ function createChord(co5Position, isMinor, basename, baseModeration, altName = "
 
             switch (mod) {
                 case 1:
-                    
-                    if(isMinor)
+
+                    if (isMinor)
                         return this.minor ? "iv" : "VI";
 
                     return this.minor ? "ii" : "IV";
                 case 0:
 
-                    if(isMinor)
+                    if (isMinor)
                         return this.minor ? "i" : "III";
 
-                    return this.minor ? "vi" : "I";                
+                    return this.minor ? "vi" : "I";
                 case 11:
 
-                    if(isMinor)
+                    if (isMinor)
                         return this.minor ? "v" : "VII";
 
-                    return this.minor ? "iii" : "V";                
+                    return this.minor ? "iii" : "V";
                 default:
                     return mod;
-            }            
+            }
         },
     }
 }
 
 var chordDefinitions = [
-  
-  //Major chords
 
-  createChord(0, false, "C", ChordAlterationType.None),
-  createChord(1, false, "G", ChordAlterationType.None),
-  createChord(2, false, "D", ChordAlterationType.None),
-  createChord(3, false, "A", ChordAlterationType.None),
-  createChord(4, false, "E", ChordAlterationType.None),
-  createChord(5, false, "C", ChordAlterationType.Flat, "B", ChordAlterationType.None),
-  createChord(6, false, "G", ChordAlterationType.Flat, "F", ChordAlterationType.Sharp),
-  createChord(7, false, "D", ChordAlterationType.Flat),
-  createChord(8, false, "A", ChordAlterationType.Flat),
-  createChord(9, false, "E", ChordAlterationType.Flat),
-  createChord(10, false, "B", ChordAlterationType.Flat),
-  createChord(11, false, "F", ChordAlterationType.None),
+    //Major chords
 
-  //Minor chords
-  
-  createChord(0, true, "A", ChordAlterationType.None),
-  createChord(1, true, "E", ChordAlterationType.None),
-  createChord(2, true, "B", ChordAlterationType.None),
-  createChord(3, true, "F", ChordAlterationType.Sharp),
-  createChord(4, true, "C", ChordAlterationType.Sharp),
-  createChord(5, true, "G", ChordAlterationType.Sharp),
-  createChord(6, true, "E", ChordAlterationType.Flat),
-  createChord(7, true, "B", ChordAlterationType.Flat),
-  createChord(8, true, "F", ChordAlterationType.None),
-  createChord(9, true, "C", ChordAlterationType.None),
-  createChord(10, true, "G", ChordAlterationType.None),
-  createChord(11, true, "D", ChordAlterationType.None)
+    createChord(0, false, "C", ChordAlterationType.None),
+    createChord(1, false, "G", ChordAlterationType.None),
+    createChord(2, false, "D", ChordAlterationType.None),
+    createChord(3, false, "A", ChordAlterationType.None),
+    createChord(4, false, "E", ChordAlterationType.None),
+    createChord(5, false, "C", ChordAlterationType.Flat, "B", ChordAlterationType.None),
+    createChord(6, false, "G", ChordAlterationType.Flat, "F", ChordAlterationType.Sharp),
+    createChord(7, false, "D", ChordAlterationType.Flat),
+    createChord(8, false, "A", ChordAlterationType.Flat),
+    createChord(9, false, "E", ChordAlterationType.Flat),
+    createChord(10, false, "B", ChordAlterationType.Flat),
+    createChord(11, false, "F", ChordAlterationType.None),
+
+    //Minor chords
+
+    createChord(0, true, "A", ChordAlterationType.None),
+    createChord(1, true, "E", ChordAlterationType.None),
+    createChord(2, true, "B", ChordAlterationType.None),
+    createChord(3, true, "F", ChordAlterationType.Sharp),
+    createChord(4, true, "C", ChordAlterationType.Sharp),
+    createChord(5, true, "G", ChordAlterationType.Sharp),
+    createChord(6, true, "E", ChordAlterationType.Flat),
+    createChord(7, true, "B", ChordAlterationType.Flat),
+    createChord(8, true, "F", ChordAlterationType.None),
+    createChord(9, true, "C", ChordAlterationType.None),
+    createChord(10, true, "G", ChordAlterationType.None),
+    createChord(11, true, "D", ChordAlterationType.None)
 ];
 
 
-function marshalModeAction(x, y, canvas,evtype, code,evt) {
+function marshalModeAction(x, y, canvas, evtype, code, evt) {
 
-    if( canvas.id in availableModeFunctions && 
+    if (canvas.id in availableModeFunctions &&
         activeModeName in availableModeFunctions[canvas.id])
-        availableModeFunctions[canvas.id][activeModeName](x,y,canvas,evtype, code,evt);
+        availableModeFunctions[canvas.id][activeModeName](x, y, canvas, evtype, code, evt);
 }
 
 function redraw() {
 
-    if(modeDependentRenderers.hasOwnProperty(activeCanvasName))
-        modeDependentRenderers[activeCanvasName]();    
+    if (modeDependentRenderers.hasOwnProperty(activeCanvasName))
+        modeDependentRenderers[activeCanvasName]();
 }
 
-function addModeListeners(source)
-{
+function addModeListeners(source) {
     source.ctx = source.getContext('2d');
-   
+
     source.addEventListener('mousedown',
-    function (event) {
-        marshalModeAction(event.pageX - source.offsetLeft, event.pageY - source.offsetTop, source,'mousedown', 0,event);
-        event.preventDefault();
-        return false;
-    },false);
+        function (event) {
+            marshalModeAction(event.pageX - source.offsetLeft, event.pageY - source.offsetTop, source, 'mousedown', 0, event);
+            event.preventDefault();
+            return false;
+        }, false);
 
     source.addEventListener('mousemove',
-    function (event) {
-        marshalModeAction(event.pageX - source.offsetLeft, event.pageY - source.offsetTop, source,'mousemove', 0,event);
-        return false;
-    },false);
+        function (event) {
+            marshalModeAction(event.pageX - source.offsetLeft, event.pageY - source.offsetTop, source, 'mousemove', 0, event);
+            return false;
+        }, false);
 
     source.addEventListener('mouseup',
-     function (event) {
-        marshalModeAction(event.pageX - source.offsetLeft, event.pageY - source.offsetTop, source,'mouseup',0, event);
-         return false;
-     },false);
+        function (event) {
+            marshalModeAction(event.pageX - source.offsetLeft, event.pageY - source.offsetTop, source, 'mouseup', 0, event);
+            return false;
+        }, false);
 
     source.addEventListener('mouseleave',
-     function (event) {
-        marshalModeAction(event.pageX - source.offsetLeft, event.pageY - source.offsetTop, source,'mouseleave', 0,event);
-         return false;
-     },false);
+        function (event) {
+            marshalModeAction(event.pageX - source.offsetLeft, event.pageY - source.offsetTop, source, 'mouseleave', 0, event);
+            return false;
+        }, false);
 
 
     window.addEventListener('keydown',
-     function (event) {
-        marshalModeAction(0, 0, source,'keydown',event.keyCode,event);
-         return false;
-     },false);
+        function (event) {
+            marshalModeAction(0, 0, source, 'keydown', event.keyCode, event);
+            return false;
+        }, false);
 
-     window.addEventListener('keypress',
-     function (event) {
-        marshalModeAction(0, 0, source,'keypress',event.keyCode,event);
-         return false;
-     },false);
+    window.addEventListener('keypress',
+        function (event) {
+            marshalModeAction(0, 0, source, 'keypress', event.keyCode, event);
+            return false;
+        }, false);
 
     window.addEventListener('keyup',
- function (event) {
-    marshalModeAction(0, 0, source,'keyup',event.keyCode,event);
-     return false;
- },false); 
- 
- window.addEventListener('paste',
- function (event) {
-    marshalModeAction(0, 0, source,'paste',0,event);
-     return false;
- },false); 
+        function (event) {
+            marshalModeAction(0, 0, source, 'keyup', event.keyCode, event);
+            return false;
+        }, false);
 
- return source;
+    window.addEventListener('paste',
+        function (event) {
+            marshalModeAction(0, 0, source, 'paste', 0, event);
+            return false;
+        }, false);
+
+    return source;
 }
 
-window.addEventListener('load', function () 
-{
+window.addEventListener('load', function () {
     main = addModeListeners(document.getElementById('circleOfFifths'));
     keyboard = addModeListeners(document.getElementById('keyboard-canvas'));
 
-    modeDependentRenderers['circle_of_fifths']= drawCircleOfFifths;
-    modeDependentRenderers['keyboard']= drawKeyboard;
+    modeDependentRenderers['circle_of_fifths'] = drawCircleOfFifths;
+    modeDependentRenderers['keyboard'] = drawKeyboard;
 
     redraw();
 });
 
 /**
  * Downloads image from canvas
- * @returns {} 
+ * @returns {}
  */
 function downloadImage() {
-    if(document.querySelector("#keyboard").style.display != 'none')
-    {
-        keyboard.toBlob(function(blob) {
-            saveAs(blob, "KEYS_"+Date.now()+".png");
-        }, "image/png");
-        return;
-    }
-    
-    if(document.querySelector("#fretboard").style.display != 'none')
-    {
-        fretboard.toBlob(function(blob) {
-            saveAs(blob, "FRET_"+Date.now()+".png");
+    if (document.querySelector("#keyboard").style.display !== 'none') {
+        keyboard.toBlob(function (blob) {
+            saveAs(blob, "KEYS_" + Date.now() + ".png");
         }, "image/png");
         return;
     }
 
-    if(document.querySelector("#longboard").style.display != 'none')
-    {
-        longboard.toBlob(function(blob) {
-            saveAs(blob, "FRETHORIZ_"+Date.now()+".png");
+    if (document.querySelector("#fretboard").style.display !== 'none') {
+        fretboard.toBlob(function (blob) {
+            saveAs(blob, "FRET_" + Date.now() + ".png");
         }, "image/png");
         return;
     }
-    
-    main.toBlob(function(blob) {
-        saveAs(blob, "COF_"+Date.now()+".png");
+
+    if (document.querySelector("#longboard").style.display !== 'none') {
+        longboard.toBlob(function (blob) {
+            saveAs(blob, "FRETHORIZ_" + Date.now() + ".png");
+        }, "image/png");
+        return;
+    }
+
+    main.toBlob(function (blob) {
+        saveAs(blob, "COF_" + Date.now() + ".png");
     }, "image/png");
 }
 
@@ -462,25 +450,36 @@ var availableModeFunctions = {
         'mode-labels': createLabelsHandler,
         'mode-fill': setTonic,
         'mode-highlight': setTonic,
-        'mode-keyboard' : function (x, y, canvas,evtype) {},
-        'mode-fretboard': function (x, y, canvas, evtype, code) { }
+        'mode-keyboard': function (x, y, canvas, evtype) {
+        },
+        'mode-fretboard': function (x, y, canvas, evtype, code) {
+        }
     },
 
     'keyboard-canvas': {
-        'mode-basetone': function (x, y, canvas,evtype) {},
-        'mode-alttone': function (x, y, canvas,evtype) {},
-        'mode-chords': function (x, y, canvas,evtype) {},
-        'mode-arrows': function (x, y, canvas,evtype) {},
-        'mode-labels': function (x, y, canvas,evtype) {},
-        'mode-fill': function (x, y, canvas,evtype) {},
-        'mode-highlight': function (x, y, canvas,evtype) {},
-        'mode-keyboard' : function (x, y, canvas,evtype) {},
-        'mode-fretboard': function (x, y, canvas, evtype, code) { }
+        'mode-basetone': function (x, y, canvas, evtype) {
+        },
+        'mode-alttone': function (x, y, canvas, evtype) {
+        },
+        'mode-chords': function (x, y, canvas, evtype) {
+        },
+        'mode-arrows': function (x, y, canvas, evtype) {
+        },
+        'mode-labels': function (x, y, canvas, evtype) {
+        },
+        'mode-fill': function (x, y, canvas, evtype) {
+        },
+        'mode-highlight': function (x, y, canvas, evtype) {
+        },
+        'mode-keyboard': function (x, y, canvas, evtype) {
+        },
+        'mode-fretboard': function (x, y, canvas, evtype, code) {
+        }
     },
 };
 
 //called depending on mode selected (activeModeName)
-var modeDependentRenderers ={
+var modeDependentRenderers = {
     //initialized onload
 };
 
@@ -497,32 +496,32 @@ var availableChordHighlights = {
     'chordmode-circle-double': ChordHighlightType.DoubleCircle,
 };
 
-function invokeModeIndependentRendereres(ctx,w,h){
-    modeIndependentRenderers.forEach(renderer => renderer(ctx,w,h));
+function invokeModeIndependentRendereres(ctx, w, h) {
+    modeIndependentRenderers.forEach(renderer => renderer(ctx, w, h));
 }
 
-function showCanvasAccordingToMode(mode){
+function showCanvasAccordingToMode(mode) {
 
-    if(mode == null)
+    if (mode == null)
         mode = avaliableContainerIds[0];
 
     //Turn off inactive containers
-    avaliableContainerIds.filter(ctnr=>ctnr!=mode).forEach(ctnr=>setCanvasVisibility(ctnr, false));
+    avaliableContainerIds.filter(ctnr => ctnr !== mode).forEach(ctnr => setCanvasVisibility(ctnr, false));
     //Turn on containers
-    avaliableContainerIds.filter(ctnr=>ctnr==mode).forEach(ctnr=>{
+    avaliableContainerIds.filter(ctnr => ctnr === mode).forEach(ctnr => {
         setCanvasVisibility(ctnr, true);
-        activeCanvasName=ctnr; //TODO: multiple active containers
+        activeCanvasName = ctnr; //TODO: multiple active containers
     });
 }
 
-function setCanvasVisibility(containerId,isVisible){
+function setCanvasVisibility(containerId, isVisible) {
 
-    document.querySelector('#'+containerId).style.display= isVisible ? 'flex' : 'none';
+    document.querySelector('#' + containerId).style.display = isVisible ? 'flex' : 'none';
 
-    var canvasId = document.querySelector('#'+containerId+' > canvas');
-    var dependent = document.querySelectorAll('.canvas-dependent-'+canvasId.id);
+    const canvasId = document.querySelector('#' + containerId + ' > canvas');
+    const dependent = document.querySelectorAll('.canvas-dependent-' + canvasId.id);
 
-    for(let item of dependent)
+    for (let item of dependent)
         item.style.display = isVisible ? 'inline-block' : 'none';
 
 }
@@ -536,12 +535,12 @@ function _restrictToOneCheckbox(needle, source, iterator) {
 
     var checkboxes = document.getElementsByTagName('input');
 
-    for (var i = 0; i != checkboxes.length; ++i) {
-        
-        if (checkboxes[i].id.indexOf(needle) == -1)
+    for (var i = 0; i !== checkboxes.length; ++i) {
+
+        if (checkboxes[i].id.indexOf(needle) === -1)
             continue;
 
-        if (checkboxes[i].id != source.id)
+        if (checkboxes[i].id !== source.id)
             checkboxes[i].checked = false;
 
         iterator(checkboxes[i]);
@@ -550,22 +549,22 @@ function _restrictToOneCheckbox(needle, source, iterator) {
 
 function changemode(source) {
 
-    _restrictToOneCheckbox("mode",source,function(cb) {
-        
+    _restrictToOneCheckbox("mode", source, function (cb) {
+
         // Display controls for selected mode
-        
-        var dependentBlock = document.getElementById(cb.id+"-controls");
+
+        var dependentBlock = document.getElementById(cb.id + "-controls");
 
         if (dependentBlock != null) {
-            dependentBlock.style.display=cb.checked?"block":"none";
+            dependentBlock.style.display = cb.checked ? "block" : "none";
 
             if (cb.checked) {
-                window.setTimeout(function() {
-                        restoreModeBlockState(cb.id);
-                        return false;
-                    },100); //hack
+                window.setTimeout(function () {
+                    restoreModeBlockState(cb.id);
+                    return false;
+                }, 100); //hack
             }
-                
+
         }
 
         activeModeName = source.id;
@@ -578,8 +577,8 @@ function restoreModeBlockState(id) {
 }
 
 function setChordmode(source) {
-    _restrictToOneCheckbox("chordmode",source,function(cb) {
-        
+    _restrictToOneCheckbox("chordmode", source, function (cb) {
+
         // Set chord mode
         if (cb.checked) {
             activeChordHighlight = availableChordHighlights[cb.id];
@@ -590,19 +589,18 @@ function setChordmode(source) {
 
 /////////////////////////////////////////////////////////////////
 
-function setTonic(x, y, canvas,evtype,evt) {
+function setTonic(x, y, canvas, evtype, evt) {
 
-    if (evtype != 'mousedown')
+    if (evtype !== 'mousedown')
         return;
 
     //marshal event to altTonic handler if any modifier key is pressed
-    if(evt.shiftKey || evt.altKey || evt.ctrlKey)
-    {
-        setAltTonic(x,y,canvas,evtype);
+    if (evt.shiftKey || evt.altKey || evt.ctrlKey) {
+        setAltTonic(x, y, canvas, evtype);
         return;
-    }    
+    }
 
-    var clickpos = getSectorNumberAndRadiusFromPixelPosition(x,y,canvas.clientWidth, canvas.clientHeight);
+    var clickpos = getSectorNumberAndRadiusFromPixelPosition(x, y, canvas.clientWidth, canvas.clientHeight);
 
     circleParameters.selectedTonic = clickpos.sector;
     circleParameters.tonicShown = true;
@@ -613,13 +611,13 @@ function setTonic(x, y, canvas,evtype,evt) {
     redraw();
 }
 
-function setAltTonic(x, y, canvas,evtype) {
+function setAltTonic(x, y, canvas, evtype) {
 
-    if (evtype != 'mousedown')
+    if (evtype !== 'mousedown')
         return;
 
-    var clickpos = getSectorNumberAndRadiusFromPixelPosition(x,y,canvas.clientWidth, canvas.clientHeight);
-    
+    var clickpos = getSectorNumberAndRadiusFromPixelPosition(x, y, canvas.clientWidth, canvas.clientHeight);
+
     circleParameters.altTonic = clickpos.sector;
     circleParameters.altTonicShown = true;
     circleParameters.isAltTonicMinor = clickpos.radius < circleParameters.outerRadiusPercents - circleParameters.majorCircleThicknessPercents;
@@ -630,9 +628,7 @@ function setAltTonic(x, y, canvas,evtype) {
 }
 
 
-
-
-function getChordDefinitionFromPosition(x,y,width,height){
+function getChordDefinitionFromPosition(x, y, width, height) {
     var xc = width / 2;
     var yc = height / 2;
 
@@ -664,36 +660,36 @@ function getChordDefinitionFromPosition(x,y,width,height){
 }
 
 
-function toggleSectorHighlight(x, y, canvas,evtype) {
+function toggleSectorHighlight(x, y, canvas, evtype) {
 
-    if (evtype != 'mousedown')
+    if (evtype !== 'mousedown')
         return;
 
     var highlightColor = document.getElementById("chord-color").value;
 
     //Guess what sector was clicked
 
-    var hit = getChordDefinitionFromPosition(x,y,canvas.clientWidth, canvas.clientHeight);
+    var hit = getChordDefinitionFromPosition(x, y, canvas.clientWidth, canvas.clientHeight);
 
     //Cycle highlihgt types
 
     if (hit != null) {
-        hit.highlight = hit.highlight == activeChordHighlight ? null : activeChordHighlight;
+        hit.highlight = hit.highlight === activeChordHighlight ? null : activeChordHighlight;
         hit.highlightColor = highlightColor;
     }
-    
+
     redraw();
 }
 
-    /////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
 
- /**
+/**
  * Draws all items (circle of fifths & arrows)
- * @returns {} 
+ * @returns {}
  */
 
 
-function drawCircleOfFifths(){
+function drawCircleOfFifths() {
     setCanvasWidthFromUi();
 
     //Get parameters from UI
@@ -713,28 +709,26 @@ function drawCircleOfFifths(){
     invokeModeIndependentRendereres(main.ctx, main.clientWidth, main.clientHeight);
 }
 
-function setCanvasWidthFromUi()
-{
+function setCanvasWidthFromUi() {
     var co5widthToHeightRatio = 1;
 
-    if(document.querySelector("#settings-width").value.length < 1)
-    {
-        if(localStorage["co5width"])
-            document.querySelector("#settings-width").value =localStorage["co5width"];
+    if (document.querySelector("#settings-width").value.length < 1) {
+        if (localStorage["co5width"])
+            document.querySelector("#settings-width").value = localStorage["co5width"];
         else
             document.querySelector("#settings-width").value = circleParameters.originalWidth;
     }
 
     var width = parseInt(document.querySelector("#settings-width").value);
 
-    if(isNaN(width))
+    if (isNaN(width))
         width = 200;
-    if(width < 200)
+    if (width < 200)
         width = 200;
-    if(width > 1000)
+    if (width > 1000)
         width = 1000;
 
-    localStorage["co5width"] =width
+    localStorage["co5width"] = width
 
     document.querySelector("#settings-width").value = width;
 
@@ -743,8 +737,7 @@ function setCanvasWidthFromUi()
 }
 
 
-
-function fillBackground(ctx,w,h) {
+function fillBackground(ctx, w, h) {
 
     ctx.clearRect(0, 0, w, h);
 
@@ -752,11 +745,11 @@ function fillBackground(ctx,w,h) {
 
     if (document.querySelector("#fill-whiten").checked) {
 
-        col = col.replace("#","");
+        col = col.replace("#", "");
 
-        var r = parseInt(col.substr(0, 2),16);
-        var g = parseInt(col.substr(2, 2),16);
-        var b = parseInt(col.substr(4, 2),16);
+        var r = parseInt(col.substr(0, 2), 16);
+        var g = parseInt(col.substr(2, 2), 16);
+        var b = parseInt(col.substr(4, 2), 16);
         var k = 0.9;
 
         r = Math.round(255 * k + (1 - k) * r);
@@ -765,7 +758,7 @@ function fillBackground(ctx,w,h) {
 
         col = "rgb(" + r.toString() + "," + g.toString() + "," + b.toString() + ")";
     }
-        
+
     ctx.fillStyle = col;
 
     if (!document.querySelector("#fill-circlefill").checked)
@@ -782,29 +775,28 @@ function lerp(t, c1, c2) {
     if (t < 0) t = 0;
     if (t > 1) t = 1;
 
-    return c1*t + c2*(1-t);
+    return c1 * t + c2 * (1 - t);
 }
 
 
 /**
  * Parse color selector as rgb value
- * @param {string} text 
+ * @param {string} text
  * @returns {color}
  */
 
-function text2rgb(text)
-{
-    text = text.replace("#","");
+function text2rgb(text) {
+    text = text.replace("#", "");
 
-    return { 
-        r:parseInt(text.substr(0, 2),16),
-        g:parseInt(text.substr(2, 2),16),
-        b:parseInt(text.substr(4, 2),16)
+    return {
+        r: parseInt(text.substr(0, 2), 16),
+        g: parseInt(text.substr(2, 2), 16),
+        b: parseInt(text.substr(4, 2), 16)
     };
 }
 
 function lerpcolor(t, c1, c2) {
-    
+
     if (t < 0) t = 0;
     if (t > 1) t = 1;
 
@@ -820,7 +812,7 @@ function lerpcolor(t, c1, c2) {
 }
 
 function smoothstep(k, power) {
-    for(var i=0;i<power;++i)
+    for (var i = 0; i < power; ++i)
         k = k * k * (3 - 2 * k);
 
     return k;
@@ -830,16 +822,16 @@ function highlightChords() {
 
     if (highlightChordsTonal())
         return;
-    
+
     for (let chord of chordDefinitions) {
         chord.active = circleParameters.tonicShown ? chord.inTonic(circleParameters.selectedTonic) : false;
     }
 
     if (circleParameters.altTonicShown) {
         for (let chord of chordDefinitions)
-            chord.active|= chord.inTonic(circleParameters.altTonic);
+            chord.active |= chord.inTonic(circleParameters.altTonic);
     }
-    
+
 
 }
 
@@ -865,16 +857,16 @@ function drawCo5(ctx, witdh, height) {
 
     for (let chord of chordDefinitions)
         drawChord(chord, ctx, xc, yc, r);
-    
+
     //Draw outer & inner circles
 
     ctx.strokeStyle = circleParameters.inactiveColor();
-    ctx.lineWidth = circleParameters.renderMode == UiRenderingModeMode.ClassicThin ? 1 : 4;
+    ctx.lineWidth = circleParameters.renderMode === UiRenderingModeMode.ClassicThin ? 1 : 4;
     ctx.beginPath();
     ctx.arc(xc, yc, r, 0, Math.PI * 2);
     ctx.stroke();
     ctx.beginPath();
-    ctx.arc(xc, yc, r * (circleParameters.outerRadiusPercents- circleParameters.majorCircleThicknessPercents), 0, Math.PI * 2);
+    ctx.arc(xc, yc, r * (circleParameters.outerRadiusPercents - circleParameters.majorCircleThicknessPercents), 0, Math.PI * 2);
     ctx.stroke();
     ctx.beginPath();
     ctx.arc(xc, yc, rstart, 0, Math.PI * 2);
@@ -883,10 +875,10 @@ function drawCo5(ctx, witdh, height) {
     ctx.lineWidth = 1;
 
     //Draw separators
-    
-    for (var i = 0; i != circleParameters.sectorCount; ++i) {        
+
+    for (var i = 0; i !== circleParameters.sectorCount; ++i) {
         ctx.beginPath();
-        var angle = circleParameters.sectorRadians * (i-0.5);
+        var angle = circleParameters.sectorRadians * (i - 0.5);
 
         ctx.moveTo(xc + rstart * Math.sin(angle), yc + rstart * Math.cos(angle));
         ctx.lineTo(xc + r * Math.sin(angle), yc + r * Math.cos(angle));
@@ -894,7 +886,7 @@ function drawCo5(ctx, witdh, height) {
         ctx.stroke();
     }
 
-    
+
     //Draw tonic selections
 
     var rmin = r *
@@ -906,21 +898,21 @@ function drawCo5(ctx, witdh, height) {
         var angles = _getTonicAngles(circleParameters.altTonic);
 
         ctx.strokeStyle = circleParameters.altColor;
-        ctx.lineWidth = circleParameters.renderMode == UiRenderingModeMode.ClassicThin ? 3 : 7;
+        ctx.lineWidth = circleParameters.renderMode === UiRenderingModeMode.ClassicThin ? 3 : 7;
         ctx.beginPath();
 
         ctx.moveTo(xc + rmin * Math.cos(angles.amin), yc + rmin * Math.sin(angles.amin));
         ctx.lineTo(xc + r * Math.cos(angles.amin), yc + r * Math.sin(angles.amin));
-        
-        if(!circleParameters.isAltTonicMinor)
+
+        if (!circleParameters.isAltTonicMinor)
             ctx.arc(xc, yc, r, angles.amin, angles.amax);
         else
             ctx.moveTo(xc + r * Math.cos(angles.amax), yc + r * Math.sin(angles.amax));
 
         ctx.lineTo(xc + rmin * Math.cos(angles.amax), yc + rmin * Math.sin(angles.amax));
 
-        if(circleParameters.isAltTonicMinor)
-            ctx.arc(xc, yc, rmin, angles.amax, angles.amin,true);
+        if (circleParameters.isAltTonicMinor)
+            ctx.arc(xc, yc, rmin, angles.amax, angles.amin, true);
 
         ctx.stroke();
     }
@@ -930,31 +922,31 @@ function drawCo5(ctx, witdh, height) {
         var angles = _getTonicAngles(circleParameters.selectedTonic);
 
         ctx.strokeStyle = circleParameters.tonicColor;
-        ctx.lineWidth = circleParameters.renderMode == UiRenderingModeMode.ClassicThin ? 3 : 7;
+        ctx.lineWidth = circleParameters.renderMode === UiRenderingModeMode.ClassicThin ? 3 : 7;
         ctx.beginPath();
 
         ctx.moveTo(xc + rmin * Math.cos(angles.amin), yc + rmin * Math.sin(angles.amin));
         ctx.lineTo(xc + r * Math.cos(angles.amin), yc + r * Math.sin(angles.amin));
-        
-        if(!circleParameters.isTonicMinor)
+
+        if (!circleParameters.isTonicMinor)
             ctx.arc(xc, yc, r, angles.amin, angles.amax);
         else
             ctx.moveTo(xc + r * Math.cos(angles.amax), yc + r * Math.sin(angles.amax));
 
         ctx.lineTo(xc + rmin * Math.cos(angles.amax), yc + rmin * Math.sin(angles.amax));
 
-        if(circleParameters.isTonicMinor)
-            ctx.arc(xc, yc, rmin, angles.amax, angles.amin,true);
+        if (circleParameters.isTonicMinor)
+            ctx.arc(xc, yc, rmin, angles.amax, angles.amin, true);
 
         ctx.stroke();
     }
 }
 
 function _getTonicAngles(ntonic) {
-    var angle = circleParameters.sectorRadians * ntonic - Math.PI/2;
+    var angle = circleParameters.sectorRadians * ntonic - Math.PI / 2;
     return {
-        amin: angle - circleParameters.sectorRadians*1.5,
-        amax: angle + circleParameters.sectorRadians*1.5,
+        amin: angle - circleParameters.sectorRadians * 1.5,
+        amax: angle + circleParameters.sectorRadians * 1.5,
     };
 }
 
@@ -969,7 +961,7 @@ function _getChordAlterationText(alt) {
     }
 }
 
-function getSectorNumberAndRadiusFromPixelPosition(x,y, canvasWidth, canvasHeight){
+function getSectorNumberAndRadiusFromPixelPosition(x, y, canvasWidth, canvasHeight) {
     var xc = canvasWidth / 2;
     var yc = canvasHeight / 2;
     var rmax = Math.min(xc, yc) - circleParameters.marginPx;
@@ -978,17 +970,17 @@ function getSectorNumberAndRadiusFromPixelPosition(x,y, canvasWidth, canvasHeigh
     y -= yc;
     var r = Math.sqrt(x * x + y * y) / rmax;
 
-    var angle = Math.atan2(y , x);
-        
+    var angle = Math.atan2(y, x);
+
     return {
-        sector:Math.round(angle / circleParameters.sectorRadians) + 3,
+        sector: Math.round(angle / circleParameters.sectorRadians) + 3,
         radius: r
     }
 }
 
 
 /**
- * 
+ *
  * @param {Integer} co5Position Chord position on circle of fifths (0 - 11)
  * @param {Integer} radialSectorNumber Circular slice number (0 - outer circle for major chords, 1 - inner for minor, 2 - center for aux chord labels)
  */
@@ -1002,8 +994,7 @@ function getChordBoundsFromChordPosition(co5Position, radialSectorNumber) {
     var minperc = 0;
     var maxperc = 1;
 
-    switch(radialSectorNumber)
-    {
+    switch (radialSectorNumber) {
         case 0:
             //outer circle for major chords
             minperc = circleParameters.outerRadiusPercents - circleParameters.majorCircleThicknessPercents;
@@ -1012,12 +1003,12 @@ function getChordBoundsFromChordPosition(co5Position, radialSectorNumber) {
         case 1:
             //inner slice for minor
             minperc = circleParameters.outerRadiusPercents - circleParameters.majorCircleThicknessPercents - circleParameters.minorCircleThicknessPercents;
-            maxperc = circleParameters.outerRadiusPercents - circleParameters.majorCircleThicknessPercents;   
+            maxperc = circleParameters.outerRadiusPercents - circleParameters.majorCircleThicknessPercents;
             break;
         case 2:
             //central slice for aux chords
             minperc = 0.1;
-            maxperc = circleParameters.outerRadiusPercents - circleParameters.majorCircleThicknessPercents - circleParameters.minorCircleThicknessPercents;   
+            maxperc = circleParameters.outerRadiusPercents - circleParameters.majorCircleThicknessPercents - circleParameters.minorCircleThicknessPercents;
             break;
         default:
             break;
@@ -1025,8 +1016,8 @@ function getChordBoundsFromChordPosition(co5Position, radialSectorNumber) {
 
     return {
         angle: angle2pi,
-        startAngle: angle2pi - circleParameters.sectorRadians/2,
-        endAngle: angle2pi + circleParameters.sectorRadians/2,
+        startAngle: angle2pi - circleParameters.sectorRadians / 2,
+        endAngle: angle2pi + circleParameters.sectorRadians / 2,
         offmax: maxperc,
         offmin: minperc,
     };
@@ -1034,7 +1025,7 @@ function getChordBoundsFromChordPosition(co5Position, radialSectorNumber) {
 
 function getChordBoundsFromDefinition(chord) {
 
-    return getChordBoundsFromChordPosition(chord.position, chord.minor ? 1:0);
+    return getChordBoundsFromChordPosition(chord.position, chord.minor ? 1 : 0);
 }
 
 /**
@@ -1044,9 +1035,9 @@ function getChordBoundsFromDefinition(chord) {
  * @param {number} xc - QQ circle center X
  * @param {number} yc - QQ circle center Y
  * @param {number} r - QQ circle radius
- * @returns {} 
+ * @returns {}
  */
-function drawChord(chord,ctx,xc,yc,r) {
+function drawChord(chord, ctx, xc, yc, r) {
 
     var bounds = getChordBoundsFromDefinition(chord);
 
@@ -1061,23 +1052,22 @@ function drawChord(chord,ctx,xc,yc,r) {
 
     //Draw background highlight
 
-    if (chord.highlight == ChordHighlightType.Sector || chord.highlight == ChordHighlightType.Fog) {
-        
-        if (chord.highlight == ChordHighlightType.Fog) {
+    if (chord.highlight === ChordHighlightType.Sector || chord.highlight === ChordHighlightType.Fog) {
+
+        if (chord.highlight === ChordHighlightType.Fog) {
             // Create gradient
-            
+
             var grd = ctx.createRadialGradient(x, y, 0, x, y, 50);
             grd.addColorStop(0, chord.highlightColor);
             grd.addColorStop(1, "rgba(255,255,255,0)");
 
-	    ctx.globalAlpha = 0.65;
+            ctx.globalAlpha = 0.65;
             ctx.fillStyle = grd;
-        }
-        else{
-	    ctx.globalAlpha = 0.4;
+        } else {
+            ctx.globalAlpha = 0.4;
             ctx.fillStyle = chord.highlightColor;
-	}
-        
+        }
+
         ctx.beginPath();
 
         ctx.arc(xc,
@@ -1090,55 +1080,55 @@ function drawChord(chord,ctx,xc,yc,r) {
             yc,
             bounds.offmin * r,
             bounds.angle + circleParameters.sectorRadians / 2,
-            bounds.angle - circleParameters.sectorRadians / 2,true);
+            bounds.angle - circleParameters.sectorRadians / 2, true);
 
         ctx.fill();
-        
+
     }
 
-    if (chord.highlight == ChordHighlightType.Circle || chord.highlight == ChordHighlightType.DoubleCircle) {
-        
+    if (chord.highlight === ChordHighlightType.Circle || chord.highlight === ChordHighlightType.DoubleCircle) {
+
         ctx.fillStyle = chord.highlightColor;
         ctx.strokeStyle = chord.highlightColor;
         ctx.lineWidth = 2;
 
         var circlerad = r * 0.1;
-        var linecount = chord.highlight == ChordHighlightType.DoubleCircle ? 2 : 1;
+        var linecount = chord.highlight === ChordHighlightType.DoubleCircle ? 2 : 1;
 
         ctx.globalAlpha = 0.05;
 
         ctx.beginPath();
 
-        ctx.arc(x,y, circlerad,0,Math.PI*2);
+        ctx.arc(x, y, circlerad, 0, Math.PI * 2);
 
         ctx.fill();
 
         ctx.globalAlpha = 0.4;
 
-        for (var i = 0; i != linecount; ++i) {
+        for (var i = 0; i !== linecount; ++i) {
 
             var offset = i * 6;
 
             ctx.beginPath();
-            ctx.arc(x,y, circlerad - offset,0,Math.PI*2);
+            ctx.arc(x, y, circlerad - offset, 0, Math.PI * 2);
             ctx.stroke();
-        }        
+        }
     }
 
-    if (chord.highlight == ChordHighlightType.UnderlineModeQuality) {
+    if (chord.highlight === ChordHighlightType.UnderlineModeQuality) {
 
         var offset = 0.1;
-        var span = 1 - offset*2;
-        var midpoint = offset + span/2;
-        var power = span / 2 * (1-Math.pow(chord.highlightPower,3));
+        var span = 1 - offset * 2;
+        var midpoint = offset + span / 2;
+        var power = span / 2 * (1 - Math.pow(chord.highlightPower, 3));
 
         var rmin = bounds.offmin * r;
-        var rmax = rmin + (bounds.offmax-bounds.offmin)*chord.highlightPower * r;
+        var rmax = rmin + (bounds.offmax - bounds.offmin) * chord.highlightPower * r;
 
 
         // Create gradient
 
-        var grd = ctx.createRadialGradient(xc, yc, rmin, xc, yc,rmax);
+        var grd = ctx.createRadialGradient(xc, yc, rmin, xc, yc, rmax);
 
         grd.addColorStop(0, chord.highlightColor);
         grd.addColorStop(0.6, chord.highlightColor);
@@ -1149,7 +1139,7 @@ function drawChord(chord,ctx,xc,yc,r) {
 
         ctx.beginPath();
 
-        
+
         ctx.arc(xc,
             yc,
             rmax,
@@ -1160,15 +1150,15 @@ function drawChord(chord,ctx,xc,yc,r) {
             yc,
             rmin,
             bounds.angle + circleParameters.sectorRadians / 2,
-            bounds.angle - circleParameters.sectorRadians / 2,true);
+            bounds.angle - circleParameters.sectorRadians / 2, true);
 
         ctx.fill();
     }
 
     //Show chord degree (alt)
-    if (circleParameters.tonicDegreeEnabled && circleParameters.tonicShown && 
-        circleParameters.renderMode == UiRenderingModeMode.Bold &&
-        chord.active && 
+    if (circleParameters.tonicDegreeEnabled && circleParameters.tonicShown &&
+        circleParameters.renderMode === UiRenderingModeMode.Bold &&
+        chord.active &&
         chord.inTonic(circleParameters.selectedTonic)) {
 
         var degree = chord.getDegree(circleParameters.selectedTonic, circleParameters.isTonicMinor);
@@ -1189,18 +1179,18 @@ function drawChord(chord,ctx,xc,yc,r) {
             yc,
             bounds.offmin * r,
             bounds.angle + circleParameters.sectorRadians / 2,
-            bounds.angle - circleParameters.sectorRadians / 2,true);
+            bounds.angle - circleParameters.sectorRadians / 2, true);
 
-        ctx.clip();      
+        ctx.clip();
 
         ctx.globalAlpha = 0.2;
         ctx.fillStyle = circleParameters.tonicColor;
 
         ctx.beginPath();
         ctx.arc(
-            xc + (r*bounds.offmax) * Math.cos(bounds.startAngle),
-            yc + (r*bounds.offmax) * Math.sin(bounds.startAngle), 
-            r*0.11  ,0,Math.PI*2);
+            xc + (r * bounds.offmax) * Math.cos(bounds.startAngle),
+            yc + (r * bounds.offmax) * Math.sin(bounds.startAngle),
+            r * 0.11, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.globalAlpha = 1;
@@ -1208,21 +1198,21 @@ function drawChord(chord,ctx,xc,yc,r) {
         ctx.font = "20px Arial";
         ctx.textAlign = "center";
 
-        var angle = lerp(0.9,bounds.startAngle,bounds.endAngle);
-        var rx = r * lerp(0.85,bounds.offmax,bounds.offmin);
+        var angle = lerp(0.9, bounds.startAngle, bounds.endAngle);
+        var rx = r * lerp(0.85, bounds.offmax, bounds.offmin);
 
-        
+
         ctx.fillStyle = "white"
-        ctx.fillText(degree, 
-            xc + rx * Math.cos(angle), 
-            yc + rx * Math.sin(angle)+9);
-    
+        ctx.fillText(degree,
+            xc + rx * Math.cos(angle),
+            yc + rx * Math.sin(angle) + 9);
+
         ctx.restore();
     }
 
 
     //Show chord degree (standard mode)
-    if (circleParameters.tonicDegreeEnabled && circleParameters.renderMode == UiRenderingModeMode.ClassicThin) {
+    if (circleParameters.tonicDegreeEnabled && circleParameters.renderMode === UiRenderingModeMode.ClassicThin) {
 
         ctx.globalAlpha = 0.4;
 
@@ -1254,17 +1244,17 @@ function drawChord(chord,ctx,xc,yc,r) {
 }
 
 function drawChordLabel(chord, ctx, x, y) {
-    
+
     ctx.fillStyle = chord.active ? circleParameters.activeColor : circleParameters.inactiveColor();
 
     //Highlight tonic chord
 
     if (circleParameters.tonicShown && chord.isTonicChord(circleParameters.selectedTonic, circleParameters.isTonicMinor))
         ctx.fillStyle = circleParameters.tonicColor;
-    else if(circleParameters.altTonicShown && chord.isTonicChord(circleParameters.altTonic, circleParameters.isAltTonicMinor))
+    else if (circleParameters.altTonicShown && chord.isTonicChord(circleParameters.altTonic, circleParameters.isAltTonicMinor))
         ctx.fillStyle = circleParameters.altColor;
-    
-   
+
+
     //Calculate actual chord text to draw
 
     var combinedText = chord.base + _getChordAlterationText(chord.baseMod);
@@ -1273,7 +1263,10 @@ function drawChordLabel(chord, ctx, x, y) {
     if (chord.hasAlternateName && !chord.isCustomName)
         combinedText += "  " + chord.altName + _getChordAlterationText(chord.altMod);
 
-    const {textBase,textExt} = chord.isCustomName ? separateChordBaseAndExtension(combinedText) : {textBase:combinedText,textExt:""};
+    const {
+        textBase,
+        textExt
+    } = chord.isCustomName ? separateChordBaseAndExtension(combinedText) : {textBase: combinedText, textExt: ""};
 
     ctx.font = chord.getFont();
     var dimBase = ctx.measureText(textBase);
@@ -1282,16 +1275,16 @@ function drawChordLabel(chord, ctx, x, y) {
     var dimExt = ctx.measureText(textExt);
 
     var combinedWidth = dimBase.width + dimExt.width;
-    
+
     chord.actualPx = x;
     chord.actualPy = y;
-    
+
     ctx.font = chord.getFont();
     ctx.fillText(textBase, x - combinedWidth / 2, y + lineHeight / 2);
-  
+
     ctx.font = chord.getExtensionFont();
-    ctx.fillText(textExt, x - combinedWidth / 2 + dimBase.width, y + lineHeight*2/3);
-  
+    ctx.fillText(textExt, x - combinedWidth / 2 + dimBase.width, y + lineHeight * 2 / 3);
+
 }
 
 /**
@@ -1299,24 +1292,23 @@ function drawChordLabel(chord, ctx, x, y) {
  * @param {String} wholeLabel Combined label with chord extensions
  */
 function separateChordBaseAndExtension(wholeLabel) {
-    
+
     var matchResult = wholeLabel.match(/(MAJ)?[2-9]?(add[2-9])?$/gmi);
-    
+
     var ext = "";
     var basename = wholeLabel;
 
-    if(matchResult!=null)
-    {
+    if (matchResult != null) {
         ext = matchResult.reduce((c, v) => c.length > v.length ? c : v);
-        basename = basename.substr(0,basename.length - ext.length);
+        basename = basename.substr(0, basename.length - ext.length);
     }
 
-    basename = basename.replace('#','♯');
-    
-    if(basename.length>1)
-        basename = basename.replace(/b$/gi,'♭'); //replace 'b' at end with unicode 'flat' symbol
+    basename = basename.replace('#', '♯');
 
-    return{
+    if (basename.length > 1)
+        basename = basename.replace(/b$/gi, '♭'); //replace 'b' at end with unicode 'flat' symbol
+
+    return {
         textBase: basename,
         textExt: ext
 

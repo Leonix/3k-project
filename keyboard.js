@@ -192,7 +192,7 @@ function drawKey(key,ctx,x,y){
         key.hitY1 = 0;
         key.hitY2 = keyboard.clientHeight;
 
-        if(key.highlight != ChordHighlightType.None)
+        if(key.highlight !== ChordHighlightType.None)
             drawKeyHighlight(key,ctx,x,y);
     }
     else{
@@ -209,7 +209,7 @@ function drawKey(key,ctx,x,y){
 
         ctx.fill();
 
-        if(key.highlight != ChordHighlightType.None)
+        if(key.highlight !== ChordHighlightType.None)
             drawKeyHighlight(key,ctx,x,y);
         
         var grd = ctx.createRadialGradient(
@@ -256,7 +256,7 @@ function drawKeyLabels(key,ctx,x,y){
         step = key.isWhite ? (keyHeight / 4.5) : (keyHeight / 4);
     }
 
-    for(var i = 0;i!=key.labels.length;++i){
+    for(var i = 0; i!==key.labels.length; ++i){
         if(key.labels[i] == null)
             continue;
 
@@ -298,7 +298,7 @@ function drawKeyHighlight(key,ctx,x,y){
 
     var keyWidth = key.width * keyboard.clientHeight * keyboardParameters.keyWidthToHeightRatio;
 
-    if (key.highlight == ChordHighlightType.Fog) {
+    if (key.highlight === ChordHighlightType.Fog) {
         // Create gradient
         
         var grd = ctx.createRadialGradient(
@@ -382,7 +382,7 @@ function drawKeyboard() {
 
 function updateKeySize() {
     
-    if(keyboardParameters.isCompressed!=document.querySelector("#keys-compressed").checked)
+    if(keyboardParameters.isCompressed!==document.querySelector("#keys-compressed").checked)
     {
         keyboardParameters.isCompressed = document.querySelector("#keys-compressed").checked;
         
@@ -446,7 +446,7 @@ function keyboardDrawBase(ctx, w, h) {
 
 function toggleKeyHighlight(x, y, cavnas,evtype) {
 
-    if (evtype != 'mousedown')
+    if (evtype !== 'mousedown')
         return;
 
     //Guess what key was clicked
@@ -473,7 +473,7 @@ function toggleKeyHighlight(x, y, cavnas,evtype) {
     //Cycle highlihgt types
 
     if (hit != null) {
-        hit.highlight = hit.highlight == activeChordHighlight ? ChordHighlightType.None: activeChordHighlight;
+        hit.highlight = hit.highlight === activeChordHighlight ? ChordHighlightType.None: activeChordHighlight;
         hit.highlightColor = highlightColor; 
     }
     
@@ -494,7 +494,7 @@ function removeKeyLabels()
 
 function toggleKeyLabel(x, y, cavnas,evtype) {
 
-    if (evtype != 'mousedown')
+    if (evtype !== 'mousedown')
         return;
 
     //Guess what key was clicked
@@ -531,7 +531,7 @@ function toggleKeyLabel(x, y, cavnas,evtype) {
     if (hit != null) {
 
         var labelIndex = Math.abs(hit.hitY1*0.5 + hit.hitY2*0.5 - y) < Math.abs(hit.hitY2 - y) ? 0 : 1;
-        hit.labels[labelIndex] = hit.labels[labelIndex] == text ? null: text;
+        hit.labels[labelIndex] = hit.labels[labelIndex] === text ? null: text;
     }
     
     drawKeyboard();

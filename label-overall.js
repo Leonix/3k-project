@@ -51,8 +51,8 @@ function drawOverallLabel(ctx, w, h) {
     var location ={
         x1: w/2 - dim.x/2 - overallLabelSettngs.padding,
         x2: w/2 + dim.x/2 + overallLabelSettngs.padding,
-        y1: overallLabelSettngs.placement == 'top'? 0 : h - dim.y - overallLabelSettngs.padding*2,
-        y2: overallLabelSettngs.placement == 'top'? dim.y + overallLabelSettngs.padding*2 : h,
+        y1: overallLabelSettngs.placement === 'top'? 0 : h - dim.y - overallLabelSettngs.padding*2,
+        y2: overallLabelSettngs.placement === 'top'? dim.y + overallLabelSettngs.padding*2 : h,
     }
     
     ctx.globalAlpha = 0.8;

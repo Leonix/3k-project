@@ -363,7 +363,7 @@ var harmonicColors = [
  * @returns {} 
  */
 function highlightChordsTonal() {
-    if (circleParameters.tonicHighlightHarmonicQualityMode == HarmonicQualityMode.None)
+    if (circleParameters.tonicHighlightHarmonicQualityMode === HarmonicQualityMode.None)
         return false;
 
     switch (circleParameters.tonicHighlightHarmonicQualityMode) {
@@ -403,7 +403,7 @@ function setHighlightMode(source) {
             
             var newmode = availableHighlightModes[cb.id];
 
-            if (newmode != circleParameters.tonicHighlightHarmonicQualityMode) {
+            if (newmode !== circleParameters.tonicHighlightHarmonicQualityMode) {
                 clearHighlights();
                 var oldLegend = document.getElementById(activeTonalHighlightId + "-legend");
 
@@ -444,7 +444,7 @@ function highlightChordsModes() {
     for (let chord of chordDefinitions) {
         var relmode = chord.getRelativeMode(tonic);
 
-        if (relmode == ModeDefinitions.None) {
+        if (relmode === ModeDefinitions.None) {
             chord.highlight = ChordHighlightType.None;
             continue;
         }
@@ -544,9 +544,9 @@ function highlightChordsPsychoaffective() {
 
         amode = (amode * 7) % 12;
 
-        var col = harmonicColors.find(c => c.Steps == amode &&
-            c.SourceMinor == tonic.minor &&
-            c.TargetMinor == chord.minor);
+        var col = harmonicColors.find(c => c.Steps === amode &&
+            c.SourceMinor === tonic.minor &&
+            c.TargetMinor === chord.minor);
 
         if (null == col)
             continue;
