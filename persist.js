@@ -39,6 +39,7 @@ var observer = new MutationObserver(function(mutations) {
 
   var persistedObjects = new Object();
   var persistedObjectsCallbacks = new Object();
+  var persistedObjectsBeforeRestoreCallbacks = {};
 
 window.addEventListener('load', function () {
     restoreState();
@@ -60,10 +61,13 @@ window.addEventListener('load', function () {
     redraw();
 });
 
-function persistObject(key, target, onRestored)
+const fallback = a => a;
+
+function persistObject(key, target, onRestored, onBeforeRestored)
 {
     persistedObjects[key] = target;
     persistedObjectsCallbacks[key] = onRestored;
+    persistedObjectsBeforeRestoreCallbacks[key] = onBeforeRestored || fallback;
 }
 
 function createStateSnapshot(){
@@ -120,19 +124,24 @@ function restoreStateSnapshot(snapshot){
             target.setAttribute(attributeOrProperty,value);
     }
 
-    var oldStates = snapshot.objects;
+    const oldStates = snapshot.objects;
 
     if(undefined === oldStates)
         return;
 
-    var restored = JSON.parse(oldStates);
+    const restored = JSON.parse(oldStates);
 
     for (var key in persistedObjects) {
         
         if(!restored.hasOwnProperty(key))
             continue;
         
-        Object.assign(persistedObjects[key],restored[key]);        
+        let restoredItem = restored[key];
+        
+        if(persistedObjectsBeforeRestoreCallbacks.hasOwnProperty(key))
+            restoredItem = persistedObjectsBeforeRestoreCallbacks[key](restoredItem);
+        
+        Object.assign(persistedObjects[key],restoredItem);        
     }
 
     if(Array.isArray(snapshot.arrows))
@@ -143,10 +152,10 @@ function restoreStateSnapshot(snapshot){
         keys = JSON.parse(snapshot.keys);
     if(typeof snapshot.circle!= 'undefined' && snapshot.circle!=null)
     {
-        var restored = JSON.parse(snapshot.circle);
+        const restoredCircle = JSON.parse(snapshot.circle);
 
         for (let i = 0; i < chordDefinitions.length; i++) {
-            Object.assign(chordDefinitions[i],restored[i]);
+            Object.assign(chordDefinitions[i],restoredCircle[i]);
         }
         
     }

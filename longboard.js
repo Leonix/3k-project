@@ -14,10 +14,13 @@ const knownStringStates ={
 
 var longboardState = {
     currentFill: 'black',
+    currentBackFill: '#ff0000',
     currentFingerSize : 14,
     capoFret: 0,
     transparency: 0,
+    drawToBackdrop: false,
     fingers: [],
+    fingerBackdrop : [],
     stringStates:[
         knownStringStates.open,
         knownStringStates.open,
@@ -30,7 +33,16 @@ var longboardState = {
     nutRadii: [],
 };
 
+const getActiveFill = ()=> longboardState.drawToBackdrop ? longboardState.currentBackFill : longboardState.currentFill;
 
+const getActiveFingerLayer = () => longboardState.drawToBackdrop ? longboardState.fingerBackdrop : longboardState.fingers;
+
+const setActiveFingerLayer = (fingers) => {
+    if (longboardState.drawToBackdrop) 
+        longboardState.fingerBackdrop = fingers; 
+    else 
+        longboardState.fingers = fingers;
+}
 
 var longboardSettings={
     colorScheme: {
@@ -58,12 +70,25 @@ var longboardSettings={
     lastHeight: 0,
 };
 
-persistObject('longboard-state', longboardState, onLongboardStateRestored);
+persistObject('longboard-state', longboardState, onLongboardStateRestored, onBeforeLongboardStateRestored);
 
 //Called after deserialization
 function onLongboardStateRestored() {
     document.querySelector("#longboard-capo-number").value = longboardState.capoFret;
     document.querySelector("#fill-longboard-finger-color").value = longboardState.currentFill;
+    document.querySelector("#fill-longboard-back-finger-color").value = longboardState.currentBackFill || 'red';
+    document.querySelector("#longboard-target-layer").checked = longboardState.drawToBackdrop;
+}
+
+function onBeforeLongboardStateRestored(state) {
+    if (!state.hasOwnProperty('fingerBackdrop'))
+        state.fingerBackdrop = [];
+    if (!state.hasOwnProperty('drawToBackdrop'))
+        state.drawToBackdrop = false;
+    if (!state.hasOwnProperty('currentBackFill'))
+        state.currentBackFill = '#ff0000';
+
+    return state;
 }
 
 
@@ -81,7 +106,10 @@ window.addEventListener('load', function () {
         "<input type='checkbox' id='longboard-show' onchange='setLongboardVisibility(this)'>" +
         "<span class='slider'>Показать</span></label>" +
         "Подсветка " +
-        "<input type='color' id='fill-longboard-finger-color' value='" + longboardState.currentFill + "' onchange='updateLongboardSettingsFromUI()'><br /><br />" +
+        "<input type='color' id='fill-longboard-finger-color' value='" + longboardState.currentFill + "' onchange='updateLongboardSettingsFromUI()'> / " +
+        "<input type='color' id='fill-longboard-back-finger-color' value='" + longboardState.currentBackFill + "' onchange='updateLongboardSettingsFromUI()'>" +
+        "<br /><br />" +
+        "<label><input type='checkbox' id='longboard-target-layer' class='checkbox-highlighted' onchange='updateLongboardSettingsFromUI()'><span> Работать с фоновым слоем [B]</span></label><br /><br />" +
         "Номер лада с каподастром " +
         "<input type='text' id='longboard-capo-number' " +
         "value = '" + longboardState.capoFret + "' " +
@@ -135,11 +163,20 @@ window.addEventListener('load', function () {
 });
 
 
+function toggleTargetLayer(){
+    document.querySelector('#longboard-target-layer').checked = !document.querySelector('#longboard-target-layer').checked;
+    longboardState.drawToBackdrop = document.querySelector('#longboard-target-layer').checked;
+
+    redraw();
+}
+
 function updateLongboardSettingsFromUI() {
 
     longboardState.capoFret = parseInt(document.querySelector('#longboard-capo-number').value);
     longboardState.currentFill = document.querySelector('#fill-longboard-finger-color').value;
+    longboardState.currentBackFill = document.querySelector('#fill-longboard-back-finger-color').value;
     longboardState.transparency = document.querySelector('#longboard-transparency').value;
+    longboardState.drawToBackdrop = document.querySelector('#longboard-target-layer').checked;
 
     if (isNaN(longboardState.capoFret))
         longboardState.capoFret = 0;
@@ -207,6 +244,7 @@ function drawLongboard() {
 
     drawLongboardBase(longboard.ctx, longboard.clientWidth, longboard.clientHeight);
     drawStrings(longboard.ctx, longboard.clientWidth, longboard.clientHeight);
+    drawFingerBackdrop(longboard.ctx, longboard.clientWidth, longboard.clientHeight);
     drawFingers(longboard.ctx, longboard.clientWidth, longboard.clientHeight);
 
     drawStringStates(longboard.ctx,longboard.clientWidth,longboard.clientHeight);
@@ -243,7 +281,26 @@ function renderFingerOutlines(ctx,x1,x2,y1,y2,size){
     ctx.closePath();
 }
 
-function renderFingerOrBarr(finger, w,h, ctx, isGhost){
+function highlightActiveFinger(finger, w,h, ctx) {
+
+    const start = getFingerCenter(finger.fret - 1 - longboardState.capoFret, finger.string1, w, h);
+    const end = getFingerCenter(finger.fret - 1 - longboardState.capoFret, finger.string2, w, h);
+
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = 'black';
+    ctx.setLineDash([]);
+    renderFingerOutlines(ctx,start.x,end.x,start.y,end.y,finger.size);
+    ctx.stroke();
+    ctx.setLineDash([5, 3]);
+    ctx.strokeStyle = longboardState.drawToBackdrop ? '#ff9100' : '#00c4ff';
+    renderFingerOutlines(ctx,start.x,end.x,start.y,end.y,finger.size);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+}
+
+    
+function renderFingerOrBarr(finger, w, h, ctx, isGhost){
     
     var a = ctx.globalAlpha;
 
@@ -317,11 +374,28 @@ function drawFingers(ctx, w, h) {
         if(fret < 0)
             continue;
 
-        renderFingerOrBarr(
-            finger,
-            w,h,ctx,
-            false);
+        renderFingerOrBarr(finger, w, h, ctx, false);
     }
+}
+
+/**
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {[]} layer
+ * @param {int} w
+ * @param {int} h
+ */
+const drawFingerBackdrop = (ctx, w, h)=>{
+    
+    for (let finger of longboardState.fingerBackdrop) {
+
+        const fret = finger.fret - longboardState.capoFret - 1;
+
+        if(fret < 0)
+            continue;
+
+        renderFingerOrBarr(finger, w, h, ctx, false);
+    }
+
 }
 
 /**
@@ -546,7 +620,7 @@ function maybeHandleNutClick(x,y, isCtrl){
     if(longboardState.stringStates[nstring] === knownStringStates.closed){
         longboardState.stringStates[nstring] = knownStringStates.customLabel;
         longboardState.stringLabels[nstring] = "_";
-        longboardState.stringColors[nstring] = longboardState.currentFill;
+        longboardState.stringColors[nstring] = getActiveFill();
         longboardState.nutRadii[nstring] = calcNutSize();
         return nstring;
     }
@@ -570,10 +644,28 @@ const FingerInputModes = {
     Ghost: {
         state : {pos: null, mousepos:{x:0,y:0}},
 
+        keydown: function (code,evt) {
+            
+            if(String.fromCharCode(code) === 'B') {
+                toggleTargetLayer();
+                evt.preventDefault();
+            }
+        },
+
         render : function(w,h,ctx){
        
             if(this.state.pos == null)
                 return;
+            
+            let hoverTarget = getActiveFingerLayer().find(finger=>
+                finger.fret === this.state.pos.fret &&
+                finger.string1 <= this.state.pos.string &&
+                finger.string2 >= this.state.pos.string);
+            
+            if(hoverTarget!==undefined) {
+                highlightActiveFinger(hoverTarget, w, h, ctx);
+                return;
+            }
 
             var center = getFingerCenter(this.state.pos.fret-1,this.state.pos.string,w,h);
                         
@@ -619,16 +711,16 @@ const FingerInputModes = {
 
                 return;
             }
-
-            var filtered  = longboardState.fingers.filter(finger=>
+            
+            var filtered  = getActiveFingerLayer().filter(finger=>
                 finger.fret !== this.state.pos.fret ||           
                 finger.string1 > this.state.pos.string ||
                 finger.string2 < this.state.pos.string
             );
 
-            if(filtered.length !== longboardState.fingers.length)
+            if(filtered.length !== getActiveFingerLayer().length)
             {
-                longboardState.fingers = filtered;
+                setActiveFingerLayer(filtered);
                 redraw();
                 saveState();
                 return;
@@ -816,7 +908,7 @@ const FingerInputModes = {
             redraw();
         },
         saveCurrentTemplate : function(){
-            longboardState.fingers.push(this.getFingerDefinitionFromTemplate());
+            getActiveFingerLayer().push(this.getFingerDefinitionFromTemplate());
             saveState();
         },
         getFingerDefinitionFromTemplate: function(){
@@ -834,13 +926,13 @@ const FingerInputModes = {
                 label: this.state.template.label,
                 fret: this.state.template.placementStart.fret,
                 opacity :longboardState.opacity,
-                fill : longboardState.currentFill,
+                fill : getActiveFill(),
                 size:  longboardState.currentFingerSize
             };
         },
         render : function(w,h,ctx){
 
-            renderFingerOrBarr(this.getFingerDefinitionFromTemplate(),w,h,ctx,true);
+            renderFingerOrBarr(this.getFingerDefinitionFromTemplate(), w, h, ctx, true);
         
         },
         mouseup: null

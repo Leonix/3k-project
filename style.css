@@ -147,8 +147,8 @@ select {
   padding-top: 8px;
   background-color: #ccc;  
   
-  -webkit-transition: .4s;
-  transition: .4s;
+  -webkit-transition: .2s;
+  transition: .2s;
 }
 
 .slider:before {
@@ -182,6 +182,13 @@ input:checked + .slider:before {
   
 }
 
+.checkbox-highlighted+span{
+    background: transparent;
+}
+
+.checkbox-highlighted:checked+span{
+    background: rgba(255, 179, 0, 0.71);
+}
 
 .chord-mode-button  {
     background-color: #2196F3;
