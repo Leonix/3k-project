@@ -73,12 +73,17 @@
     }
 
     function createColorpicker($colorpicker_wrapper) {
+
+        const $hint = $colorpicker_wrapper.querySelector('.a-color-picker-hint');
+
         var acp = AColorPicker.createPicker($colorpicker_wrapper, {
             color: '#000000',
             showHSL: false,
             palette: loadPaletteFromStorage(),
             paletteEditable: true
         });
+
+        $colorpicker_wrapper.querySelector('.a-color-picker-palette').after($hint);
 
         // Throttle change event on $current_input
         var timeout;
