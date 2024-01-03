@@ -295,3 +295,7 @@ div.legends > div {
     border: 1px solid gray;
     padding: 10px;
 }
+
+#pop {
+    z-index: 10;
+}
