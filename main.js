@@ -329,8 +329,10 @@ function marshalModeAction(x, y, canvas, evtype, code, evt) {
 
 function redraw() {
 
-    if (modeDependentRenderers.hasOwnProperty(activeCanvasName))
+    if (modeDependentRenderers.hasOwnProperty(activeCanvasName)) {
         modeDependentRenderers[activeCanvasName]();
+        saveUndoState();
+    }
 }
 
 function addModeListeners(source) {
@@ -429,6 +431,120 @@ function downloadImage() {
         saveAs(blob, "COF_" + Date.now() + ".png");
     }, "image/png");
 }
+
+var [saveUndoState, handleUndo, handleRedo] = (function() {
+
+    // will never create undo points more often than this period (ms)
+    const MIN_STATE_TIME_DIFF = 1000;
+    // redraw() calls more often than this (ms) will be merged into one undo point
+    const THROTTLER_TIME_DIFF = 150;
+
+    const states = [];
+    let save_state_timeout = null;
+    let current_state_index = -1;
+
+    window.addEventListener('load', function () {
+        saveUndoState();
+        setupGlobalEventHandlers();
+    });
+
+    return [throttler, handleUndo, handleRedo];
+
+    // Called after each redraw()
+    // Manages timeouts so that heavy serialization logic is not called too often
+    function throttler() {
+        if (save_state_timeout) {
+            clearTimeout(save_state_timeout);
+        }
+        save_state_timeout = setTimeout(saveUndoState, getThrottleDelay());
+    }
+
+    function getThrottleDelay() {
+        if (current_state_index < 0) {
+            return THROTTLER_TIME_DIFF;
+        }
+        const [ts, state] = states[current_state_index];
+        let delay = ts + MIN_STATE_TIME_DIFF - (new Date()).getTime();
+        if (delay < THROTTLER_TIME_DIFF) {
+            return THROTTLER_TIME_DIFF;
+        }
+        return delay;
+    }
+
+    // Called after each redraw(), but no more than once per second.
+    // Compares current form state to previous known state.
+    // If different, creates a new undo state.
+    function saveUndoState() {
+        // Check if something changed compared to current undo point.
+        // Nothing to do here if they match.
+        let new_state = createStateSnapshot();
+        if (current_state_index >= 0) {
+            const [ts, old_state] = states[current_state_index];
+            if (JSON.stringify(old_state) == JSON.stringify(new_state)) {
+                return;
+            }
+        }
+
+        // Drop all redo states, then create a new undo point
+        current_state_index++;
+        states.length = current_state_index;
+        states[current_state_index] = [(new Date()).getTime(), new_state];
+    }
+
+    // handles Ctrl+Z and similar undo invokes
+    function handleUndo() {
+        if (current_state_index > 0) {
+            current_state_index--;
+        } else if (current_state_index < 0) {
+            return;
+        }
+        const [ts, state] = states[current_state_index];
+        restoreStateSnapshot(state, function() {
+            saveState();
+            redraw();
+        });
+    }
+
+    // handles Ctrl+Y and similar redo invokes
+    function handleRedo() {
+        if (current_state_index+1 >= states.length) {
+            return;
+        }        
+        current_state_index++;
+        const [ts, state] = states[current_state_index];
+        restoreStateSnapshot(state, function() {
+            saveState();
+            redraw();
+        });
+    }
+
+    function setupGlobalEventHandlers() {
+        document.addEventListener('keypress', function(e) {
+            if (e.ctrlKey) {
+                if (e.code == 'KeyZ') {
+                    handleUndo();
+                } else if (e.code == 'KeyY') {
+                    handleRedo();
+                }
+            } else if (e.metaKey && e.code == 'KeyZ') {
+                if (e.shiftKey) {
+                    handleRedo();
+                } else {
+                    handleUndo();
+                }
+            }
+        });
+
+        document.getElementById('undo-link').addEventListener('click', function() {
+            handleUndo();
+        });
+    
+        document.getElementById('redo-link').addEventListener('click', function() {
+            handleRedo();
+        });
+    }
+
+}());
 
 //*****//
 //MODE SELECTION - RELATED
