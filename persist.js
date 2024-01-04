@@ -79,6 +79,7 @@ function createStateSnapshot(){
         labels:Array.from(activeLabels),
         keys: JSON.stringify(keys),
         circle: JSON.stringify(chordDefinitions),
+        circleParameters: JSON.stringify(circleParameters)
     };
 
     for (const selector in watchedElements) {
@@ -101,7 +102,7 @@ function createStateSnapshot(){
     return snapshot;
 }
 
-function restoreStateSnapshot(snapshot){
+function restoreStateSnapshot(snapshot, cb){
 
     for (const selector in watchedElements) {
 
@@ -159,13 +160,20 @@ function restoreStateSnapshot(snapshot){
         }
         
     }
+    if (typeof snapshot.circleParameters != 'undefined' && snapshot.circleParameters) {
+        const restoredCircleParameters = JSON.parse(snapshot.circleParameters);
+        Object.assign(circleParameters, restoredCircleParameters);
+    }
 
     window.setTimeout(function() {
         for (var key in persistedObjects) {
             persistedObjectsCallbacks[key]();
         }
+        if (cb) {
+            cb();
+        }
         return false;
-    },200); //hack
+    }, 100); //hack
 }
 
 function saveState()
