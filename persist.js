@@ -181,6 +181,9 @@ function restoreState()
         return;
 
     var snapshot = JSON.parse(value);
+    if (!snapshot) {
+        return;
+    }
 
     //Dont restore arrow state on regular persist event
     snapshot.arrows= [];
