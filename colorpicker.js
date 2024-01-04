@@ -117,7 +117,7 @@
 
     function loadPaletteFromStorage() {
         try {
-            return JSON.parse(localStorage.getItem('color_palette'));
+            return JSON.parse(localStorage.getItem('color_palette')) || 'PALETTE_MATERIAL_CHROME';
         } catch (e) {
             return 'PALETTE_MATERIAL_CHROME';
         }
