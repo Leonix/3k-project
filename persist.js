@@ -44,23 +44,25 @@ var observer = new MutationObserver(function(mutations) {
   var persistedObjectsBeforeRestoreCallbacks = {};
 
 window.addEventListener('load', function () {
-    restoreState();
+    setTimeout(function() {
+        restoreState();
 
-    //Start observing attribute changes on persisted elements
+        //Start observing attribute changes on persisted elements
 
-    for (const selector in watchedElements) {
+        for (const selector in watchedElements) {
 
-        var target = document.querySelector(selector);
+            var target = document.querySelector(selector);
 
-        if(null == target)
-            continue;
-        
-        target.addEventListener('input', function(){saveState();});
+            if(null == target)
+                continue;
+            
+            target.addEventListener('input', function(){saveState();});
 
-        observer.observe(target,{attributes:true});
-    }
+            observer.observe(target,{attributes:true});
+        }
 
-    redraw();
+        redraw();
+    }, 50); // longboard and other controls are not ready to restore their state immediately
 });
 
 const fallback = a => a;
@@ -82,7 +84,8 @@ function createStateSnapshot(){
         keys: JSON.stringify(keys),
         circle: JSON.stringify(chordDefinitions),
         circleParameters: JSON.stringify(circleParameters),
-        activeCanvasName: activeCanvasName
+        activeCanvasName: activeCanvasName,
+        activeModeName: activeModeName
     };
 
     for (const selector in watchedElements) {
@@ -168,9 +171,20 @@ function restoreStateSnapshot(snapshot, cb){
         Object.assign(circleParameters, restoredCircleParameters);
     }
     if (typeof snapshot.activeCanvasName != 'undefined') {
-        if (modeDependentRenderers.hasOwnProperty(activeCanvasName)) {
-            activeCanvasName = snapshot.activeCanvasName;
-            showCanvasAccordingToMode(activeCanvasName);
+        activeCanvasName = snapshot.activeCanvasName;
+        showCanvasAccordingToMode(activeCanvasName);
+    }
+    if (typeof snapshot.activeModeName != 'undefined') {
+        activeModeName = snapshot.activeModeName;
+        
+        let $checkbox = document.getElementById(activeModeName);
+        if (!$checkbox) {
+            activeModeName = 'mode-basetone';
+            $checkbox = document.getElementById(activeModeName);
+        }
+        if ($checkbox) {
+            $checkbox.checked = true;
+            changemode($checkbox);
         }
     }
 
