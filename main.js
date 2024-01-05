@@ -438,6 +438,8 @@ var [saveUndoState, handleUndo, handleRedo] = (function() {
     const MIN_STATE_TIME_DIFF = 1000;
     // redraw() calls more often than this (ms) will be merged into one undo point
     const THROTTLER_TIME_DIFF = 150;
+    // limit memory usage: do not keep more than this number of undo states; must be greater than 11
+    const LIMIT_NUMBER_OF_STATES = 200;
 
     const states = [];
     let save_state_timeout = null;
@@ -489,6 +491,10 @@ var [saveUndoState, handleUndo, handleRedo] = (function() {
         current_state_index++;
         states.length = current_state_index;
         states[current_state_index] = [(new Date()).getTime(), new_state];
+        if (states.length > LIMIT_NUMBER_OF_STATES) {
+            current_state_index -= 10;
+            states.splice(0, 10);
+        }
     }
 
     // handles Ctrl+Z and similar undo invokes
