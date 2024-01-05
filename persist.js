@@ -15,9 +15,11 @@ var observer = new MutationObserver(function(mutations) {
 
       '#alt-color':propertyPrefix+'value',
       '#alt-enabled':propertyPrefix+'checked',
+      '#fretboard-show':propertyPrefix+'checked',
+      '#longboard-show':propertyPrefix+'checked',
+      '#keyboard-show':propertyPrefix+'checked',
 
       '#tonic-color':propertyPrefix+'value',
-
 
       '#label-size':propertyPrefix+'value',
       '#label-color':propertyPrefix+'value',
@@ -79,7 +81,8 @@ function createStateSnapshot(){
         labels:Array.from(activeLabels),
         keys: JSON.stringify(keys),
         circle: JSON.stringify(chordDefinitions),
-        circleParameters: JSON.stringify(circleParameters)
+        circleParameters: JSON.stringify(circleParameters),
+        activeCanvasName: activeCanvasName
     };
 
     for (const selector in watchedElements) {
@@ -163,6 +166,12 @@ function restoreStateSnapshot(snapshot, cb){
     if (typeof snapshot.circleParameters != 'undefined' && snapshot.circleParameters) {
         const restoredCircleParameters = JSON.parse(snapshot.circleParameters);
         Object.assign(circleParameters, restoredCircleParameters);
+    }
+    if (typeof snapshot.activeCanvasName != 'undefined') {
+        if (modeDependentRenderers.hasOwnProperty(activeCanvasName)) {
+            activeCanvasName = snapshot.activeCanvasName;
+            showCanvasAccordingToMode(activeCanvasName);
+        }
     }
 
     window.setTimeout(function() {
