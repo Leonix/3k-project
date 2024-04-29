@@ -541,6 +541,13 @@ var [saveUndoState, handleUndo, handleRedo] = (function() {
             }
         });
 
+        document.getElementById('mode-circleOfFifths').addEventListener('change', function (event) {
+            if (document.getElementById('mode-circleOfFifths').checked) {
+                showCanvasAccordingToMode(null);
+            }
+            return false;
+        }, false);
+    
         document.getElementById('undo-link').addEventListener('click', function() {
             handleUndo();
         });

@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="style.css?1">
     <script src="labels.js"></script>
     <script src="arrows.js"></script>
-    <script src="main.js?2"></script>
+    <script src="main.js?3"></script>
     <script src="keyboard.js"></script>
     <script src="tonal.js"></script>
     <script src="vendor/FileSaver.js"></script>
@@ -47,6 +47,11 @@
 
         <!-- settings fixed menu -->
         <div id="settings">
+
+            <label class="switch">
+                <input type="checkbox" id="mode-circleOfFifths" onchange="changemode(this)">
+                <span class="slider">КВИНТОВЫЙ КРУГ</span>
+            </label>
 
             <!-- MODE SELECTORS -->
             <label class="switch canvas-dependent canvas-dependent-circleOfFifths">
